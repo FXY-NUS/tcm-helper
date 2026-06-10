@@ -1,0 +1,3365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#3a5a40">
+<title>中医学习助手</title>
+<style>
+/* ==================== 全局样式与适老化设计 ==================== */
+:root{
+  /* 温暖配色：宣纸米白 + 墨绿主色 + 暖棕 */
+  --bg:#f5f0e6;            /* 宣纸米白背景 */
+  --panel:#fcf9f2;        /* 面板更浅 */
+  --ink:#2b2b26;          /* 墨色文字 */
+  --ink-soft:#5c574d;     /* 次要文字 */
+  --primary:#3a5a40;      /* 墨绿主色 */
+  --primary-dark:#2c4632;
+  --primary-soft:#dfe7df;
+  --accent:#9c6644;       /* 暖棕 */
+  --accent-soft:#e8dccb;
+  --line:#d8cfbd;         /* 分隔线 */
+  --user-bub:#e7efe4;     /* 用户气泡 */
+  --ai-bub:#fbf7ee;       /* AI气泡 */
+  --danger:#a23b2d;
+  --warn:#b07d2b;
+  --shadow:0 2px 10px rgba(60,50,30,.12);
+  --radius:14px;
+  /* 字号系统，默认"大" */
+  --fs-base:20px;
+  --fs-sm:17px;
+  --fs-lg:23px;
+  --fs-title:27px;
+}
+html[data-fontsize="标准"]{--fs-base:18px;--fs-sm:15px;--fs-lg:20px;--fs-title:24px;}
+html[data-fontsize="大"]{--fs-base:20px;--fs-sm:17px;--fs-lg:23px;--fs-title:27px;}
+html[data-fontsize="特大"]{--fs-base:24px;--fs-sm:20px;--fs-lg:28px;--fs-title:32px;}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Source Han Sans CN",sans-serif;
+  font-size:var(--fs-base);
+  line-height:1.75;
+  color:var(--ink);
+  background:var(--bg);
+  overflow:hidden;
+}
+.serif{font-family:"Songti SC","STSong","SimSun","Noto Serif SC",serif;}
+button{font-family:inherit;font-size:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,textarea,select{font-family:inherit;font-size:inherit;color:var(--ink);}
+
+/* 按钮最小点击区 44px */
+.btn{
+  min-height:48px;min-width:48px;padding:10px 18px;border-radius:var(--radius);
+  background:var(--primary);color:#fff;font-weight:600;display:inline-flex;
+  align-items:center;justify-content:center;gap:8px;transition:.15s;box-shadow:var(--shadow);
+}
+.btn:active{transform:scale(.97);}
+.btn.ghost{background:var(--panel);color:var(--primary);border:2px solid var(--primary-soft);box-shadow:none;}
+.btn.warm{background:var(--accent);}
+.btn.danger{background:var(--danger);}
+.btn.small{min-height:40px;padding:6px 14px;font-size:var(--fs-sm);}
+
+/* ==================== 总体布局 ==================== */
+#app{display:flex;height:100%;position:relative;}
+
+/* 侧边栏 */
+#sidebar{
+  width:300px;min-width:300px;background:var(--panel);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;height:100%;transition:margin-left .25s ease;z-index:40;
+}
+#sidebar.collapsed{margin-left:-300px;}
+.sb-head{padding:16px;border-bottom:1px solid var(--line);}
+.sb-title{font-size:var(--fs-lg);font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px;}
+.sb-tabs{display:flex;border-bottom:1px solid var(--line);}
+.sb-tab{flex:1;padding:12px 8px;font-weight:700;color:var(--ink-soft);border-bottom:3px solid transparent;font-size:var(--fs-sm);}
+.sb-tab.active{color:var(--primary);border-bottom-color:var(--primary);background:var(--primary-soft);}
+.sb-pane{flex:1;display:flex;flex-direction:column;min-height:0;}
+.sb-list{flex:1;overflow-y:auto;padding:8px;}
+/* 患者卡片 */
+.pat-item{padding:12px 14px;border-radius:var(--radius);margin-bottom:6px;cursor:pointer;border:2px solid transparent;}
+.pat-item:hover{background:var(--accent-soft);}
+.pat-item.active{background:var(--accent-soft);border-color:var(--accent);}
+.pat-item .title{font-weight:700;color:var(--ink);}
+.pat-item .meta{font-size:var(--fs-sm);color:var(--ink-soft);display:flex;justify-content:space-between;margin-top:2px;}
+/* 患者关联横幅 */
+.pat-banner{
+  max-width:920px;margin:0 auto 14px;background:var(--accent-soft);border:1px solid var(--accent);
+  border-radius:12px;padding:10px 16px;color:var(--accent);font-weight:600;cursor:pointer;font-size:var(--fs-sm);
+}
+.pat-banner:hover{filter:brightness(.97);}
+/* 患者详情 / 就诊时间线 */
+.pat-info-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+.pat-info-grid .row{display:flex;gap:10px;}
+.pat-info-grid label{flex:0 0 96px;font-weight:700;color:var(--primary);padding-top:11px;}
+.pat-info-grid input,.pat-info-grid textarea{
+  flex:1;padding:11px 12px;border-radius:12px;border:2px solid var(--line);background:#fff;outline:none;
+}
+.visit-card{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;background:#fff;overflow:hidden;}
+.visit-card .vc-head{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:var(--bg);}
+.visit-card .vc-date{font-weight:700;color:var(--primary);}
+.visit-card .vc-body{padding:0 16px;max-height:0;overflow:hidden;transition:max-height .2s;}
+.visit-card.open .vc-body{max-height:none;padding:14px 16px;}
+.visit-card .vc-text{white-space:pre-wrap;line-height:1.7;}
+.visit-card .vc-acts{display:flex;gap:10px;margin-top:12px;}
+.draft-area{width:100%;min-height:280px;padding:14px;border-radius:12px;border:2px solid var(--line);background:#fff;line-height:1.7;resize:vertical;}
+.sess-item{
+  padding:12px 14px;border-radius:var(--radius);margin-bottom:6px;cursor:pointer;
+  display:flex;flex-direction:column;gap:2px;border:2px solid transparent;
+}
+.sess-item:hover{background:var(--primary-soft);}
+.sess-item.active{background:var(--primary-soft);border-color:var(--primary);}
+.sess-item .title{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sess-item .meta{font-size:var(--fs-sm);color:var(--ink-soft);display:flex;justify-content:space-between;align-items:center;}
+.sess-acts{display:none;gap:6px;}
+.sess-item:hover .sess-acts,.sess-item.active .sess-acts{display:flex;}
+.sess-acts button{font-size:var(--fs-sm);color:var(--ink-soft);padding:4px 6px;border-radius:8px;}
+.sess-acts button:hover{background:var(--bg);color:var(--primary);}
+
+.sb-foot{border-top:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:10px;}
+.quota-box{font-size:var(--fs-sm);color:var(--ink-soft);}
+.quota-bar{height:12px;background:var(--accent-soft);border-radius:6px;overflow:hidden;margin-top:4px;}
+.quota-fill{height:100%;background:var(--primary);width:0%;transition:width .3s;}
+.quota-fill.warn{background:var(--warn);}
+.quota-fill.over{background:var(--danger);}
+
+/* 主区 */
+#main{flex:1;display:flex;flex-direction:column;height:100%;min-width:0;position:relative;}
+.topbar{
+  display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--panel);
+  border-bottom:1px solid var(--line);min-height:64px;
+}
+.icon-btn{
+  min-width:48px;min-height:48px;border-radius:var(--radius);display:flex;align-items:center;
+  justify-content:center;font-size:24px;background:var(--bg);border:1px solid var(--line);
+}
+.icon-btn:active{background:var(--primary-soft);}
+.conv-title{flex:1;font-size:var(--fs-lg);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--primary);}
+
+/* 模型切换开关 */
+.model-switch{
+  display:flex;align-items:center;background:var(--bg);border:2px solid var(--primary-soft);
+  border-radius:999px;padding:4px;gap:2px;cursor:pointer;user-select:none;
+}
+.model-switch .opt{
+  padding:8px 14px;border-radius:999px;font-size:var(--fs-sm);font-weight:600;color:var(--ink-soft);
+  white-space:nowrap;transition:.15s;
+}
+.model-switch .opt.on{background:var(--primary);color:#fff;}
+.model-switch .opt.on.flash{background:var(--accent);}
+
+/* 消息流 */
+#stream{flex:1;overflow-y:auto;padding:18px 14px 18px;scroll-behavior:smooth;}
+
+/* 日期分隔条（居中） */
+.date-sep{
+  max-width:920px;margin:6px auto 22px;display:flex;align-items:center;gap:14px;
+  color:var(--ink-soft);font-size:var(--fs-sm);
+}
+.date-sep::before,.date-sep::after{content:"";flex:1;height:1px;background:var(--line);}
+.date-sep span{
+  background:var(--accent-soft);color:var(--accent);border-radius:999px;
+  padding:4px 16px;font-weight:600;white-space:nowrap;
+}
+
+/* 经典聊天气泡：用户靠右、AI 靠左 */
+.msg{display:flex;gap:12px;margin-bottom:22px;max-width:920px;margin-left:auto;margin-right:auto;align-items:flex-start;}
+.msg.user{flex-direction:row-reverse;}
+
+/* CSS 画的头像：用户=圆形，AI=圆角方形（不用 emoji） */
+.msg .avatar{
+  width:44px;height:44px;min-width:44px;display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:var(--fs-sm);color:#fff;
+  font-family:"Songti SC","Noto Serif SC",serif;
+}
+.msg.ai .avatar{
+  border-radius:12px;background:var(--accent);  /* 圆角方形 */
+}
+.msg.user .avatar{
+  border-radius:50%;background:var(--primary);  /* 圆形 */
+}
+
+.msg .body{display:flex;flex-direction:column;min-width:0;max-width:78%;}
+.msg.user .body{align-items:flex-end;}
+.msg.ai .body{align-items:flex-start;}
+.msg .bubble{
+  background:var(--ai-bub);border:1px solid var(--line);
+  border-radius:16px 16px 16px 4px;  /* AI：左下角小，像从左侧伸出 */
+  padding:14px 18px;box-shadow:var(--shadow);overflow-wrap:break-word;max-width:100%;
+}
+.msg.user .bubble{
+  background:var(--user-bub);
+  border-radius:16px 16px 4px 16px;  /* 用户：右下角小 */
+}
+.msg .time{font-size:var(--fs-sm);color:var(--ink-soft);margin-bottom:4px;padding:0 4px;}
+.msg-acts{margin-top:6px;display:flex;gap:10px;}
+.msg-acts button{font-size:var(--fs-sm);color:var(--primary);padding:4px 0;}
+.msg-acts button:hover{text-decoration:underline;}
+
+/* Markdown 渲染样式 */
+.bubble h1,.bubble h2,.bubble h3{color:var(--primary);margin:.6em 0 .3em;font-family:"Songti SC","Noto Serif SC",serif;}
+.bubble h1{font-size:1.3em;}.bubble h2{font-size:1.2em;}.bubble h3{font-size:1.1em;}
+.bubble p{margin:.5em 0;}
+.bubble ul,.bubble ol{margin:.5em 0;padding-left:1.5em;}
+.bubble li{margin:.25em 0;}
+.bubble code{background:var(--accent-soft);padding:2px 6px;border-radius:6px;font-family:monospace;font-size:.92em;}
+.bubble pre{background:#2b2b26;color:#f5f0e6;padding:12px;border-radius:10px;overflow-x:auto;}
+.bubble pre code{background:none;color:inherit;padding:0;}
+.bubble blockquote{border-left:4px solid var(--accent);margin:.6em 0;padding:4px 14px;color:var(--ink-soft);background:var(--accent-soft);border-radius:0 8px 8px 0;}
+.bubble strong{color:var(--primary-dark);}
+.bubble table{border-collapse:collapse;margin:.6em 0;width:100%;}
+.bubble th,.bubble td{border:1px solid var(--line);padding:6px 10px;text-align:left;}
+.bubble th{background:var(--primary-soft);}
+.typing-cursor{display:inline-block;width:8px;height:1.1em;background:var(--primary);vertical-align:text-bottom;animation:blink 1s steps(2) infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* 输入区 */
+.composer{border-top:1px solid var(--line);background:var(--panel);padding:10px 14px 14px;}
+.tpl-bar{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;scrollbar-width:thin;}
+.tpl-bar::-webkit-scrollbar{height:6px;}
+.tpl-bar::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+.tpl-btn{
+  min-height:46px;padding:8px 16px;border-radius:999px;background:var(--bg);
+  border:2px solid var(--primary-soft);color:var(--primary);font-weight:600;white-space:nowrap;flex-shrink:0;
+}
+.tpl-btn.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+.tpl-btn.free.on{background:var(--accent);border-color:var(--accent);}
+/* 「更多」折叠弹层：用 fixed 定位，避免被 .tpl-bar 的 overflow-x 裁切 */
+.tpl-more-wrap{position:relative;flex-shrink:0;}
+.tpl-more-pop{
+  position:fixed;background:var(--panel);border:2px solid var(--primary-soft);
+  border-radius:var(--radius);box-shadow:var(--shadow);padding:8px;display:none;flex-direction:column;gap:6px;z-index:120;min-width:220px;max-width:86vw;
+}
+.tpl-more-pop.show{display:flex;}
+.tpl-more-pop .tpl-btn{width:100%;justify-content:flex-start;}
+/* 说明卡内部 */
+.tpl-card-brief{font-size:var(--fs-lg);color:var(--ink);margin-bottom:6px;}
+.tpl-card-sub{font-size:var(--fs-sm);color:var(--ink-soft);margin:14px 0 6px;font-weight:700;}
+.tpl-eg{
+  display:block;width:100%;text-align:left;background:var(--bg);border:2px solid var(--primary-soft);
+  border-radius:12px;padding:11px 14px;margin-bottom:8px;color:var(--primary);font-weight:600;line-height:1.5;
+}
+.tpl-eg:active{transform:scale(.99);}
+.tpl-card-full summary{cursor:pointer;color:var(--accent);font-weight:600;margin-top:8px;}
+.tpl-card-full pre{
+  white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);
+  border-radius:10px;padding:12px;margin-top:8px;font-family:inherit;font-size:var(--fs-sm);color:var(--ink-soft);line-height:1.6;
+}
+.composer-row2{display:flex;gap:8px;margin-bottom:8px;}
+.inquiry-btn{flex-shrink:0;}
+.active-tpl-tag{
+  font-size:var(--fs-sm);color:var(--accent);font-weight:600;display:flex;align-items:center;gap:6px;
+}
+.active-tpl-tag .x{cursor:pointer;padding:2px 6px;border-radius:6px;background:var(--accent-soft);}
+/* 图片待发缩略图区 */
+.img-staging{display:flex;gap:10px;flex-wrap:wrap;padding:6px 2px 10px;}
+.img-thumb{position:relative;width:84px;height:84px;border-radius:12px;overflow:hidden;border:2px solid var(--primary-soft);background:#fff;}
+.img-thumb img{width:100%;height:100%;object-fit:cover;}
+.img-thumb .rm{position:absolute;top:2px;right:2px;width:26px;height:26px;border-radius:50%;background:rgba(40,35,25,.72);color:#fff;font-size:18px;line-height:26px;text-align:center;cursor:pointer;}
+.img-thumb .rm:hover{background:var(--danger);}
+/* 气泡内图片 */
+.bubble-imgs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.bubble-imgs img{max-width:160px;max-height:160px;border-radius:10px;border:1px solid var(--line);cursor:zoom-in;object-fit:cover;}
+/* 系统小提示（如 key 切换） */
+.sys-tip{max-width:920px;margin:0 auto 18px;text-align:center;}
+.sys-tip span{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:6px 16px;font-size:var(--fs-sm);font-weight:600;}
+/* lightbox 放大查看 */
+#lightbox{position:fixed;inset:0;background:rgba(20,16,10,.88);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
+#lightbox.show{display:flex;}
+#lightbox img{max-width:96vw;max-height:92vh;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.5);}
+#lightbox .lb-x{position:fixed;top:16px;right:20px;font-size:40px;color:#fff;cursor:pointer;line-height:1;}
+.input-wrap{display:flex;gap:10px;align-items:flex-end;}
+#inputBox{
+  flex:1;resize:none;min-height:56px;max-height:200px;padding:14px 16px;border-radius:var(--radius);
+  border:2px solid var(--line);background:#fff;line-height:1.6;outline:none;
+}
+#inputBox:focus{border-color:var(--primary);}
+#sendBtn{min-width:90px;height:56px;font-size:var(--fs-lg);}
+#sendBtn:disabled{opacity:.5;}
+
+/* 快速导航浮窗 */
+#quickNav{
+  position:absolute;right:14px;top:80px;width:200px;max-height:60%;background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
+  overflow-y:auto;z-index:30;padding:8px;
+}
+#quickNav .qn-title{font-size:var(--fs-sm);font-weight:700;color:var(--primary);padding:4px 8px;}
+.qn-item{padding:8px 10px;border-radius:8px;font-size:var(--fs-sm);cursor:pointer;color:var(--ink-soft);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qn-item:hover{background:var(--primary-soft);color:var(--primary);}
+#quickNav.hidden{display:none;}
+.qn-toggle{position:absolute;right:14px;top:80px;z-index:31;}
+
+/* ==================== 弹层/模态 ==================== */
+.overlay{
+  position:fixed;inset:0;background:rgba(40,35,25,.5);z-index:100;display:none;
+  align-items:center;justify-content:center;padding:16px;
+}
+.overlay.show{display:flex;}
+.modal{
+  background:var(--panel);border-radius:18px;max-width:760px;width:100%;max-height:92vh;
+  overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.3);
+}
+.modal-full{max-width:900px;}
+.modal-head{
+  position:sticky;top:0;background:var(--panel);padding:18px 22px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;z-index:2;
+}
+.modal-head h2{margin:0;font-size:var(--fs-title);color:var(--primary);}
+.modal-body{padding:22px;}
+.modal-foot{position:sticky;bottom:0;background:var(--panel);padding:16px 22px;border-top:1px solid var(--line);
+  display:flex;gap:12px;justify-content:flex-end;}
+.close-x{font-size:30px;line-height:1;color:var(--ink-soft);padding:6px 12px;border-radius:10px;}
+.close-x:hover{background:var(--bg);}
+
+/* 设置/表单元素 */
+.field{margin-bottom:22px;}
+.field label{display:block;font-weight:700;margin-bottom:8px;color:var(--primary);}
+.field .hint{font-size:var(--fs-sm);color:var(--ink-soft);margin-bottom:8px;}
+.field input[type=text],.field input[type=password],.field input[type=number],.field textarea,.field select{
+  width:100%;padding:13px 14px;border-radius:var(--radius);border:2px solid var(--line);background:#fff;outline:none;
+}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--primary);}
+
+/* chip 点选 */
+.chip-group{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;}
+.chip{
+  min-height:46px;padding:9px 18px;border-radius:999px;background:var(--bg);
+  border:2px solid var(--line);color:var(--ink);font-weight:600;transition:.12s;
+}
+.chip.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+.chip.on.warm{background:var(--accent);border-color:var(--accent);}
+.inq-section{margin-bottom:24px;padding-bottom:18px;border-bottom:1px dashed var(--line);}
+.inq-section .sec-label{font-size:var(--fs-lg);font-weight:700;color:var(--primary);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.font-choose{display:flex;gap:10px;}
+
+/* 问诊单：自填 chip / 行内输入 */
+.chip.add-chip{background:var(--accent-soft);border-style:dashed;border-color:var(--accent);color:var(--accent);}
+.chip.custom{background:var(--accent);border-color:var(--accent);color:#fff;}
+.chip-inline-input{
+  min-height:46px;padding:9px 14px;border-radius:999px;border:2px solid var(--accent);
+  background:#fff;outline:none;min-width:120px;
+}
+.inq-hint-sub{font-size:var(--fs-sm);color:var(--ink-soft);margin:2px 0 8px;}
+
+/* 病程演化阶段行 */
+.stage-row{display:flex;gap:8px;margin-top:8px;align-items:flex-start;}
+.stage-row .st-time{flex:0 0 34%;}
+.stage-row .st-chg{flex:1;}
+.stage-row input{padding:11px 12px;border-radius:12px;border:2px solid var(--line);background:#fff;width:100%;}
+.stage-row .st-del{flex:0 0 auto;min-width:44px;min-height:46px;border-radius:12px;background:var(--bg);border:2px solid var(--line);color:var(--danger);font-weight:700;}
+.add-stage-btn{margin-top:10px;background:var(--primary-soft);color:var(--primary);border:2px dashed var(--primary);border-radius:12px;min-height:46px;padding:8px 16px;font-weight:600;}
+
+/* 脉诊展开开关 */
+.pulse-toggle{display:flex;align-items:center;gap:10px;margin:10px 0;}
+.switch{position:relative;width:54px;height:30px;background:var(--line);border-radius:999px;transition:.2s;flex:0 0 auto;}
+.switch.on{background:var(--primary);}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s;}
+.switch.on::after{transform:translateX(24px);}
+.pulse-detail{margin-top:8px;}
+.pulse-pos{margin-bottom:14px;padding:10px 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line);}
+.pulse-pos .pp-label{font-weight:700;color:var(--accent);margin-bottom:6px;}
+
+/* toast 提示 */
+#toast{
+  position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:var(--primary-dark);
+  color:#fff;padding:14px 26px;border-radius:999px;box-shadow:var(--shadow);z-index:300;
+  font-size:var(--fs-base);display:none;max-width:90%;text-align:center;
+}
+#toast.show{display:block;animation:toastin .3s;}
+@keyframes toastin{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;}}
+
+/* 右下角错误 toast（全局错误捕获用） */
+#errToastWrap{position:fixed;right:16px;bottom:16px;z-index:400;display:flex;flex-direction:column;gap:10px;max-width:min(420px,86vw);}
+.err-toast{
+  background:var(--danger);color:#fff;border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.28);
+  padding:12px 14px;display:flex;gap:10px;align-items:flex-start;font-size:var(--fs-sm);line-height:1.5;
+  animation:toastin .25s;
+}
+.err-toast .et-body{flex:1;word-break:break-word;}
+.err-toast .et-title{font-weight:700;margin-bottom:2px;}
+.err-toast .et-x{cursor:pointer;font-size:22px;line-height:1;padding:0 4px;opacity:.85;flex:0 0 auto;}
+.err-toast .et-x:hover{opacity:1;}
+
+/* 确认弹窗 */
+.confirm-modal{max-width:440px;text-align:center;}
+.confirm-modal .modal-body{font-size:var(--fs-lg);}
+
+/* 空状态 */
+.empty-state{
+  text-align:center;color:var(--ink-soft);padding:40px 20px;max-width:640px;margin:30px auto;
+}
+.empty-state .big{font-size:60px;margin-bottom:14px;}
+.empty-state h3{color:var(--primary);font-size:var(--fs-title);}
+.empty-cards{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:24px;}
+.empty-card{
+  background:var(--panel);border:2px solid var(--primary-soft);border-radius:var(--radius);
+  padding:14px 18px;cursor:pointer;font-weight:600;color:var(--primary);box-shadow:var(--shadow);
+}
+.empty-card:active{transform:scale(.97);}
+
+/* 多 key 管理 */
+.key-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;}
+.key-row .k-idx{font-weight:700;color:var(--accent);min-width:24px;text-align:center;}
+.key-row .k-label{flex:0 0 130px;padding:9px 10px;border-radius:10px;border:2px solid var(--line);background:#fff;}
+.key-row .k-key{flex:1;min-width:160px;padding:9px 10px;border-radius:10px;border:2px solid var(--line);background:#fff;}
+.key-row .k-btn{min-width:42px;min-height:42px;border-radius:10px;border:2px solid var(--line);background:#fff;color:var(--ink-soft);font-weight:700;}
+.key-row .k-btn:hover{border-color:var(--primary);color:var(--primary);}
+.key-row .k-btn.del:hover{border-color:var(--danger);color:var(--danger);}
+.key-used{font-size:var(--fs-sm);color:var(--ink-soft);flex:0 0 auto;}
+/* 温度滑块 */
+.temp-row{display:flex;align-items:center;gap:14px;margin-top:8px;}
+.temp-row input[type=range]{flex:1;height:30px;}
+.temp-val{font-weight:700;color:var(--primary);min-width:54px;text-align:center;}
+.temp-default{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:600;color:var(--ink);}
+.temp-default input{width:22px;height:22px;}
+.temp-row.disabled{opacity:.45;pointer-events:none;}
+/* 模板编辑 */
+.tpl-edit-ta{width:100%;min-height:240px;padding:12px;border-radius:12px;border:2px solid var(--line);background:#fff;line-height:1.6;resize:vertical;font-family:inherit;}
+.tpl-custom-badge{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;padding:2px 10px;font-size:var(--fs-sm);font-weight:600;margin-left:8px;}
+/* 用量明细小表 */
+.usage-table{width:100%;border-collapse:collapse;font-size:var(--fs-sm);}
+.usage-table th,.usage-table td{border:1px solid var(--line);padding:8px 10px;text-align:center;}
+.usage-table th{background:var(--primary-soft);}
+
+/* 平板/手机响应式 */
+@media(max-width:820px){
+  #sidebar{position:absolute;left:0;top:0;bottom:0;box-shadow:var(--shadow);}
+  #quickNav{display:none!important;}
+  .qn-toggle{display:none;}
+}
+.backdrop{position:absolute;inset:0;background:rgba(0,0,0,.3);z-index:35;display:none;}
+.backdrop.show{display:block;}
+@media(min-width:821px){.backdrop{display:none!important;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- 侧边栏 -->
+  <aside id="sidebar" class="collapsed">
+    <div class="sb-head">
+      <div class="sb-title serif">🌿 中医学习助手</div>
+    </div>
+    <div class="sb-tabs">
+      <button class="sb-tab active" data-tab="chat">💬 对话</button>
+      <button class="sb-tab" data-tab="patient">📂 医案</button>
+    </div>
+    <!-- 对话 tab -->
+    <div id="tabChat" class="sb-pane">
+      <div style="padding:10px 12px 0;">
+        <button class="btn" style="width:100%;" id="newChatBtn">➕ 新建对话</button>
+      </div>
+      <div class="sb-list" id="sessList"></div>
+    </div>
+    <!-- 医案 tab -->
+    <div id="tabPatient" class="sb-pane" style="display:none;">
+      <div style="padding:10px 12px 0;">
+        <button class="btn warm" style="width:100%;" id="newPatientBtn">➕ 新建患者</button>
+      </div>
+      <div class="sb-list" id="patientList"></div>
+    </div>
+    <div class="sb-foot">
+      <div class="quota-box">
+        <div style="display:flex;justify-content:space-between;">
+          <span id="quotaLabel">本月用量</span>
+          <span id="quotaAmt">$0.00 / $10</span>
+        </div>
+        <div class="quota-bar"><div class="quota-fill" id="quotaFill"></div></div>
+      </div>
+      <button class="btn ghost" style="width:100%;" id="settingsBtn">⚙️ 设置</button>
+    </div>
+  </aside>
+  <div class="backdrop" id="backdrop"></div>
+
+  <!-- 主区 -->
+  <main id="main">
+    <div class="topbar">
+      <button class="icon-btn" id="menuBtn" title="菜单">☰</button>
+      <div class="conv-title serif" id="convTitle">中医学习助手</div>
+      <div class="model-switch" id="modelSwitch" title="切换模型">
+        <span class="opt on" data-tier="pro">深度模式</span>
+        <span class="opt flash" data-tier="flash">快速模式</span>
+      </div>
+      <button class="icon-btn" id="saveCaseBtn" title="存入医案">📥</button>
+      <button class="icon-btn" id="exportBtn" title="导出">⬇️</button>
+    </div>
+
+    <div id="stream"></div>
+
+    <button class="icon-btn qn-toggle" id="qnToggle" title="导航" style="display:none;">🧭</button>
+    <div id="quickNav" class="hidden">
+      <div class="qn-title">📍 我的提问</div>
+      <div id="qnList"></div>
+    </div>
+
+    <!-- 输入区 -->
+    <div class="composer">
+      <div class="tpl-bar" id="tplBar"></div>
+      <div class="composer-row2">
+        <button class="btn warm inquiry-btn" id="inquiryBtn">📋 问诊单</button>
+        <button class="btn ghost inquiry-btn" id="imgBtn">📷 图片</button>
+        <input type="file" id="imgInput" accept="image/*" multiple style="display:none;">
+        <div class="active-tpl-tag" id="activeTplTag" style="display:none;"></div>
+      </div>
+      <div class="img-staging" id="imgStaging" style="display:none;"></div>
+      <div class="input-wrap">
+        <textarea id="inputBox" placeholder="在这里输入您的问题…（按发送键提交）" rows="1"></textarea>
+        <button class="btn" id="sendBtn">发送</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 导出菜单 -->
+<div class="overlay" id="exportOverlay">
+  <div class="modal confirm-modal">
+    <div class="modal-head"><h2>导出对话</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+      <button class="btn" id="doPrint">🖨️ 打印（A4 排版）</button>
+      <button class="btn ghost" id="doCopy">📋 复制全文</button>
+      <button class="btn ghost" id="doTxt">📄 下载 txt 文件</button>
+    </div>
+  </div>
+</div>
+
+<!-- 问诊单 -->
+<div class="overlay" id="inquiryOverlay">
+  <div class="modal modal-full">
+    <div class="modal-head"><h2>📋 问诊单</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-body" id="inquiryBody"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close>取消</button>
+      <button class="btn" id="genInquiry">生成问诊单 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- 模板说明卡 -->
+<div class="overlay" id="tplCardOverlay">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-head"><h2 id="tplCardTitle">模板</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-body" id="tplCardBody"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close>取消</button>
+      <button class="btn" id="tplCardUse">使用此模式</button>
+    </div>
+  </div>
+</div>
+
+<!-- 患者详情 -->
+<div class="overlay" id="patientOverlay">
+  <div class="modal modal-full">
+    <div class="modal-head"><h2 id="patientTitle">患者档案</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-body" id="patientBody"></div>
+    <div class="modal-foot" id="patientFoot"></div>
+  </div>
+</div>
+
+<!-- 患者资料编辑 -->
+<div class="overlay" id="patientEditOverlay">
+  <div class="modal">
+    <div class="modal-head"><h2 id="patientEditTitle">编辑患者资料</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-body" id="patientEditBody"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close>取消</button>
+      <button class="btn" id="patientEditSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 存入医案：起草 + 编辑 + 归属 -->
+<div class="overlay" id="saveCaseOverlay">
+  <div class="modal modal-full">
+    <div class="modal-head"><h2>📥 存入医案</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-body" id="saveCaseBody"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close>取消</button>
+      <button class="btn" id="saveCaseConfirm">确认入档</button>
+    </div>
+  </div>
+</div>
+
+<!-- 单条就诊记录编辑 -->
+<div class="overlay" id="visitEditOverlay">
+  <div class="modal">
+    <div class="modal-head"><h2 id="visitEditTitle">编辑就诊记录</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-body" id="visitEditBody"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close>取消</button>
+      <button class="btn" id="visitEditSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 设置 -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal modal-full">
+    <div class="modal-head"><h2>⚙️ 设置</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-body" id="settingsBody"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close>关闭</button>
+      <button class="btn" id="saveSettings">保存设置</button>
+    </div>
+  </div>
+</div>
+
+<!-- 模板/人设指令编辑 -->
+<div class="overlay" id="tplEditOverlay">
+  <div class="modal modal-full">
+    <div class="modal-head"><h2 id="tplEditTitle">编辑指令</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-body">
+      <div class="hint" style="margin-bottom:8px;">直接修改这段「系统指令」，决定老师如何回答。保存后本模板将优先使用你的版本。</div>
+      <textarea id="tplEditTa" class="tpl-edit-ta"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" id="tplEditReset">↩ 恢复默认</button>
+      <button class="btn ghost" data-close>取消</button>
+      <button class="btn" id="tplEditSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 通用确认弹窗 -->
+<div class="overlay" id="confirmOverlay">
+  <div class="modal confirm-modal">
+    <div class="modal-head"><h2 id="confirmTitle">确认</h2></div>
+    <div class="modal-body" id="confirmMsg"></div>
+    <div class="modal-foot" style="justify-content:center;">
+      <button class="btn ghost" id="confirmNo">取消</button>
+      <button class="btn danger" id="confirmYes">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 重命名/输入弹窗 -->
+<div class="overlay" id="promptOverlay">
+  <div class="modal confirm-modal">
+    <div class="modal-head"><h2 id="promptTitle">输入</h2></div>
+    <div class="modal-body"><input type="text" id="promptInput" style="width:100%;padding:13px;border-radius:12px;border:2px solid var(--line);"></div>
+    <div class="modal-foot" style="justify-content:center;">
+      <button class="btn ghost" id="promptNo">取消</button>
+      <button class="btn" id="promptYes">确定</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="errToastWrap"></div>
+<div id="lightbox"><span class="lb-x">×</span><img id="lightboxImg" alt=""></div>
+
+<script>
+"use strict";
+/* ============================================================
+   中医学习助手 · 单文件应用
+   模块顺序：CONFIG 常量区 / db 层 / api 层 / 模板数据区 / ui 层
+   ============================================================ */
+
+/* ==================== ① CONFIG 常量区 ====================
+   模型字符串与单价（来源：ai.google.dev 官方文档，2026-06 核实）
+   单价单位：美元 / 每百万 token（USD per 1M tokens，paid tier）
+   - 深度模式(Pro)：gemini-3.1-pro-preview  输入 $2.00 / 输出 $12.00
+   - 快速模式(Flash)：gemini-2.5-flash（稳定版）输入 $0.30 / 输出 $2.50
+   说明：Pro 档用当前旗舰 3.1（与官方 Gemini 网页一致，保证"灵光"水准不降级）；
+   Flash 档用 2.5 稳定线（最便宜，作省额度模式）。
+   备选（如需可在设置页改模型字符串）：
+     gemini-2.5-pro    输入 $1.25 / 输出 $10.00（旧旗舰，更省）
+     gemini-3.5-flash  输入 $1.50 / 输出 $9.00（新 Flash，更强但贵）
+   模型字符串允许在「设置」中修改，以防未来改名。
+========================================================== */
+const CONFIG = {
+  models: {
+    pro:   { id: "gemini-3.1-pro-preview", label: "深度模式（Pro）",  inPrice: 2.00, outPrice: 12.00 },
+    flash: { id: "gemini-2.5-flash", label: "快速模式（Flash）", inPrice: 0.30, outPrice: 2.50  }
+  },
+  apiBase: "https://generativelanguage.googleapis.com/v1beta/models",
+  defaultMonthlyLimit: 10,      // 默认月度限额 $10
+  defaultFontSize: "大",         // 默认字号
+  dbName: "tcm-assistant",
+  dbVersion: 2,   // v2：新增 patients（患者医案）store
+  generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
+};
+
+/* ==================== ② db 层（IndexedDB 封装） ====================
+   库名 tcm-assistant，三个 object store：
+     sessions（会话元数据） / messages（消息节点·树结构） / settings（键值）
+   全部封装为 async API。
+================================================================ */
+const DB = (() => {
+  let _db = null;
+  function open() {
+    return new Promise((resolve, reject) => {
+      if (_db) return resolve(_db);
+      const req = indexedDB.open(CONFIG.dbName, CONFIG.dbVersion);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains("sessions")) {
+          const s = db.createObjectStore("sessions", { keyPath: "id" });
+          s.createIndex("updatedAt", "updatedAt");
+        }
+        if (!db.objectStoreNames.contains("messages")) {
+          const m = db.createObjectStore("messages", { keyPath: "id" });
+          m.createIndex("sessionId", "sessionId");
+        }
+        if (!db.objectStoreNames.contains("settings")) {
+          db.createObjectStore("settings", { keyPath: "key" });
+        }
+        // v2 新增：患者医案。onupgradeneeded 只新建缺失的 store，已有 store/数据不动。
+        if (!db.objectStoreNames.contains("patients")) {
+          const p = db.createObjectStore("patients", { keyPath: "id" });
+          p.createIndex("updatedAt", "updatedAt");
+        }
+      };
+      req.onsuccess = () => { _db = req.result; resolve(_db); };
+      req.onerror = () => reject(req.error);
+    });
+  }
+  function tx(store, mode) {
+    return open().then(db => db.transaction(store, mode).objectStore(store));
+  }
+  function reqP(r){ return new Promise((res,rej)=>{ r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+
+  return {
+    // sessions
+    async putSession(s){ return reqP((await tx("sessions","readwrite")).put(s)); },
+    async getSession(id){ return reqP((await tx("sessions","readonly")).get(id)); },
+    async allSessions(){
+      const arr = await reqP((await tx("sessions","readonly")).getAll());
+      return (arr||[]).sort((a,b)=> b.updatedAt - a.updatedAt);
+    },
+    async delSession(id){ return reqP((await tx("sessions","readwrite")).delete(id)); },
+    // messages
+    async putMessage(m){ return reqP((await tx("messages","readwrite")).put(m)); },
+    async getMessage(id){ return reqP((await tx("messages","readonly")).get(id)); },
+    async messagesBySession(sid){
+      const store = await tx("messages","readonly");
+      const idx = store.index("sessionId");
+      const arr = await reqP(idx.getAll(sid));
+      return arr || [];
+    },
+    async delMessagesBySession(sid){
+      const list = await this.messagesBySession(sid);
+      const store = await tx("messages","readwrite");
+      for(const m of list) store.delete(m.id);
+      return true;
+    },
+    // patients（患者医案）
+    async putPatient(p){ return reqP((await tx("patients","readwrite")).put(p)); },
+    async getPatient(id){ return reqP((await tx("patients","readonly")).get(id)); },
+    async allPatients(){
+      const arr = await reqP((await tx("patients","readonly")).getAll());
+      return (arr||[]).sort((a,b)=> (b.updatedAt||0) - (a.updatedAt||0));
+    },
+    async delPatient(id){ return reqP((await tx("patients","readwrite")).delete(id)); },
+    // settings
+    async getSetting(key, def){
+      const r = await reqP((await tx("settings","readonly")).get(key));
+      return r ? r.value : def;
+    },
+    async setSetting(key, value){ return reqP((await tx("settings","readwrite")).put({key, value})); },
+    async allSettings(){ return reqP((await tx("settings","readonly")).getAll()); },
+    // 全量导出/导入（备份）
+    async exportAll(){
+      return {
+        meta: { app:"tcm-assistant", version:CONFIG.dbVersion, exportedAt:Date.now() },
+        sessions: await this.allSessions(),
+        messages: await (async()=>{ return reqP((await tx("messages","readonly")).getAll()); })(),
+        settings: await this.allSettings(),
+        patients: await this.allPatients()
+      };
+    },
+    async importAll(data){
+      if(!data || !data.sessions) throw new Error("文件格式不正确");
+      const db = await open();
+      await new Promise((res,rej)=>{
+        const t = db.transaction(["sessions","messages","settings","patients"],"readwrite");
+        t.oncomplete=res; t.onerror=()=>rej(t.error);
+        (data.sessions||[]).forEach(s=>t.objectStore("sessions").put(s));
+        (data.messages||[]).forEach(m=>t.objectStore("messages").put(m));
+        (data.settings||[]).forEach(st=>t.objectStore("settings").put(st));
+        (data.patients||[]).forEach(p=>t.objectStore("patients").put(p));
+      });
+      return true;
+    }
+  };
+})();
+
+/* ==================== ③ 模板数据区（Prompt 模板库） ====================
+   每个模板的 systemInstruction：经方派老师人设 + 五条硬约束。
+   默认（无模板）使用 DEFAULT_SYSTEM。
+================================================================ */
+// 五条硬约束（共同骨架），各模板在其上叠加专属侧重
+const FIVE_RULES = `\n【五条硬约束，必须遵守】\n①引用经典条文时必须给出原文与篇目出处（如《伤寒论·辨太阳病脉证并治》第几条），不可只给大意。\n②表述时明确区分三类来源：经方原文 / 后世注家观点（须点名是谁，如成无己、柯琴、尤在泾、曹颖甫等）/ 你自己的推断，三者不可混为一谈。\n③凡不确定之处明说"此处存疑"，宁可承认不知，绝不编造条文、剂量或出处。\n④凡开具方剂，结尾必须自查：各药剂量是否在常规范围、配伍有无违反十八反十九畏，并列出自查结论。\n⑤对话者具半年以上经方功底，直接使用专业术语，不要科普腔、不要免责声明式啰嗦。`;
+
+const TEACHER_PERSONA = `你是一位以经方为本、博采众长的中医老师：宗仲景之学，重六经辨证与方证对应，临证讲求有是证用是方、方证相应、药随证转；但对温病学派、寒凉攻下、补土派等各家学说，以及倪海厦、傅青主等近现代名家的经验，同样熟稔且尊重。学生以哪一派的思路提问，你就按该派的理路去分析；不同派别之间可对比互参、取长补短，但绝不用单一框架贬斥他派。说理朴实、引经据典、不尚空谈，注重落地与临床实操。`;
+
+const DEFAULT_SYSTEM = TEACHER_PERSONA +
+  `\n你与一位有经方功底的学生对话，围绕中医经典、方剂、辨证、针灸、医案等展开教学与切磋。回答深入具体，重证据、重出处。` +
+  FIVE_RULES;
+
+const TEMPLATES = [
+  {
+    key:"tiaowen", icon:"📖", name:"条文学习",
+    brief:"你问它讲：贴一条经典原文，它逐句给你讲透。",
+    examples:["讲讲《伤寒论》第12条桂枝汤证，营卫不和怎么理解？","《金匮要略·痰饮咳嗽病》「病痰饮者，当以温药和之」这句怎么解？"],
+    placeholder:"例如：讲讲《伤寒论》第12条桂枝汤证，营卫不和怎么理解？",
+    system: TEACHER_PERSONA +
+      `\n本次任务是【条文学习】。学生提出某一经典条文（多为《伤寒论》《金匮要略》），你需：逐句训诂关键字词，疏通文义；点明该条所辨之病机与所属六经；说明条文在全书中的位置与前后呼应（如与某条互参）；指出历代注家在此条上的主要分歧（点名注家），并说明你倾向哪一解及理由。讲解要落到"这条到底在教我们辨什么、用什么方"。` +
+      FIVE_RULES
+  },
+  {
+    key:"fangji", icon:"💊", name:"方剂解析",
+    brief:"直接输入方名，它按 出处→君臣佐使→剂量→加减→禁忌 讲全套。",
+    examples:["解析小柴胡汤的组方思路、君臣佐使与加减法。","真武汤"],
+    placeholder:"例如：解析小柴胡汤的组方思路、君臣佐使与加减法。",
+    system: TEACHER_PERSONA +
+      `\n本次任务是【方剂解析】。对学生所问方剂，依次讲：出处与原方主治条文（给原文）；逐味药的性味归经与在本方中的作用，理清君臣佐使；组方的核心病机与配伍精义；常规剂量与煎服法（依原方）；常见加减化裁及其指征；本方与相近方的使用界限。结尾按约束④自查全方剂量与配伍禁忌。` +
+      FIVE_RULES
+  },
+  {
+    key:"wenzhen", icon:"🩺", name:"问诊推演",
+    brief:"填好问诊单发给它，它做六经辨证推演。",
+    examples:["（点「📋 问诊单」整理好症状再发给它最省事）","患者恶寒发热、无汗、头项强痛、脉浮紧，该怎么辨？"],
+    placeholder:"贴入问诊单内容，我来做六经辨证推演。",
+    system: TEACHER_PERSONA +
+      `\n本次任务是【问诊推演·六经辨证】，常配合"问诊单"使用。依据学生提供的四诊信息，进行结构化推演：先归纳主症与病机要点；判断病位（六经归属，表里寒热虚实）；给出辨证结论与立法；据法选出主方，说明方证如何相应；列出需进一步追问以鉴别的关键点（指出尚缺哪些信息）。若信息不足以定方，明确说出"信息不足，存疑待补"，不可强行凑方。结尾按约束④自查方剂。` +
+      FIVE_RULES
+  },
+  {
+    key:"jianbie", icon:"⚖️", name:"鉴别诊断",
+    brief:"两个像的证型/方子，它给你掰开揉碎对比。",
+    examples:["太阳中风与太阳伤寒如何鉴别？","桂枝汤与麻黄汤怎么分？"],
+    placeholder:"例如：太阳中风与太阳伤寒如何鉴别？桂枝汤与麻黄汤怎么分？",
+    system: TEACHER_PERSONA +
+      `\n本次任务是【鉴别诊断】。对学生提出的两个（或多个）易混证候/方证，做对比辨析：用表格或并列条目对比病机、主症、舌脉、关键鉴别点（"分水岭"症状）、对应治法与方剂；指出临床最易误辨之处与纠错口诀；各举一句关键经典条文为据。务求让学生抓住"一锤定音"的鉴别要点。` +
+      FIVE_RULES
+  },
+  {
+    key:"zhenjiu", icon:"🧷", name:"针灸",
+    brief:"描述证候，它给选穴、手法、针感预期。",
+    examples:["肝郁化火的失眠，针灸如何选穴、用什么手法？","胃寒疼痛，针灸怎么治？"],
+    placeholder:"例如：肝郁化火的失眠，针灸如何选穴、用什么手法？",
+    system: TEACHER_PERSONA +
+      `\n本次任务是【针灸】。对学生所述证候，给出针灸方案：先据辨证立法（与经方思路打通，经络辨证）；列出主穴与配穴，逐穴说明定位、归经、本案取义；说明针刺手法（补泻、提插捻转、留针时长）、是否配合艾灸/电针；交代预期针感（得气表现，如酸麻胀重走窜）与可能的针后反应；列出禁忌与注意（如孕妇禁穴、深部脏器避让）。对定位与手法不确定处明确存疑。` +
+      FIVE_RULES
+  },
+  {
+    key:"yiyi", icon:"☯️", name:"医易结合",
+    brief:"报卦象+症状，它把卦理和医理参着分析。",
+    examples:["卦象水火既济，患者心烦失眠、腰膝酸软，怎么参？","起得风火家人卦，结合患者眩晕症状帮我分析。"],
+    placeholder:"贴入卦象（如：水火既济 / 六爻）与症状，我来结合解读。",
+    system: TEACHER_PERSONA +
+      `\n本次任务是【医易结合】。学生提供卦象（卦名、爻象或起卦信息）与患者症状，你需：先按传统易学断法解读卦象（卦名卦义、上下卦、爻位、动爻），并注明这是"传统断法"；再将卦象象数之理与中医脏腑、阴阳、五行、病机相参，给出"医易互参的推断"；二者必须分别标注、绝不混淆，凡属你的引申推断一律点明。强调医易结合多为思路启发与象思维训练，不可替代四诊合参定证。` +
+      FIVE_RULES
+  },
+  {
+    key:"ceyan", icon:"📝", name:"自我测验",
+    brief:"它考你答：让它出题，你作答，它批改讲解。",
+    examples:["给我出 5 道太阳病篇的辨证选择题。","出 3 道方剂君臣佐使的辨析题考考我。"],
+    placeholder:"例如：给我出 5 道太阳病篇的辨证选择题。",
+    system: TEACHER_PERSONA +
+      `\n本次任务是【自我测验】。你来出题考学生：依学生指定范围出题（条文默写/方证辨析/鉴别选择/病案辨证等混合题型），一次出 3-5 题，题干清晰、有梯度。先只给题目，让学生作答；学生作答后再逐题点评、给标准答案与出处，指出失分点。出题须基于真实经典条文与方剂，答案务必准确（按五条约束，尤其②③）。每题标注考点。` +
+      FIVE_RULES
+  },
+  {
+    key:"yian", icon:"🔍", name:"医案复盘",
+    brief:"贴一则医案，它带你复盘得失。",
+    examples:["（贴一则古案或今案，含症状、辨证、处方、转归）","复盘一下：患者服小柴胡汤三剂后寒热往来缓解但仍口苦，这案怎么看？"],
+    placeholder:"贴入一则医案（症状/处方/转归），我们一起复盘。",
+    system: TEACHER_PERSONA +
+      `\n本次任务是【医案复盘】。学生贴入一则医案（古案或今案，含症状、辨证、处方、转归）。你需：还原原医家的辨证思路与立方逻辑；评析此案辨证是否允当、选方用药是否丝丝入扣、剂量煎服有无讲究；指出可商榷或可优化之处（给出你的替代思路并标明为推断）；提炼此案给学生的可迁移经验（"这一案教会我们什么"）。引用案中关键处方时按约束④自查剂量配伍。` +
+      FIVE_RULES
+  }
+];
+
+/* ==================== ④ api 层（Gemini 直连） ====================
+   优先 streamGenerateContent（SSE 流式），失败降级到 generateContent。
+   contents 数组由当前路径上的消息组装，systemInstruction 单独传。
+   无 key 时进入演示模式，返回固定模拟回复。
+================================================================ */
+const API = (() => {
+  // 把路径消息转为 Gemini contents 格式（仅 user/model 进入 contents）
+  // 用户消息若带 images，则 parts = [inline_data 图片..., text]
+  function buildContents(pathMsgs){
+    return pathMsgs
+      .filter(m => m.role === "user" || m.role === "model")
+      .map(m => {
+        const parts = [];
+        if(m.role === "user" && Array.isArray(m.images)){
+          m.images.forEach(img=>{ if(img && img.dataB64) parts.push({ inline_data:{ mime_type: img.mimeType||"image/jpeg", data: img.dataB64 } }); });
+        }
+        parts.push({ text: m.content });
+        return { role: m.role === "user" ? "user" : "model", parts };
+      });
+  }
+
+  // 演示模式模拟回复
+  function demoReply(userText, hasImages){
+    const imgNote = hasImages ? `（已收到你上传的图片，演示模式下不做真实识别）\n\n` : ``;
+    return `（演示模式：这是模拟回复，填入 API key 后将连接真实模型）\n\n` + imgNote +
+      `我已收到你的问题：「${(userText||"").slice(0,40)}${(userText||"").length>40?"…":""}」。\n\n` +
+      `当前为**演示模式**，没有真正调用 Gemini。请到右下角「⚙️ 设置」里填入你的 API key（去 Google AI Studio 免费申请），保存后再发送消息，就能连接真实的经方派老师模型啦。\n\n` +
+      `> 提示：模型、月度额度、字号都可以在设置里调整。`;
+  }
+
+  /**
+   * 发送一次请求。
+   * @param {Object} o {apiKey, modelId, systemText, contents, onDelta, onDone, onError}
+   *   onDelta(textChunk)  流式增量
+   *   onDone({text, usage})  完成，usage={promptTokenCount,candidatesTokenCount,totalTokenCount}
+   *   onError(messageZh, canRetry)
+   */
+  // 自定义错误类型：区分网络层失败 / HTTP 错误 / 流式中断
+  class ApiError extends Error {
+    constructor(kind, opts){
+      super((opts && opts.message) || kind);
+      this.kind = kind;            // "network" | "http" | "aborted"
+      this.status = opts && opts.status;       // HTTP 状态码
+      this.apiMessage = opts && opts.apiMessage; // Google 返回的 error.message 原文
+      this.modelId = opts && opts.modelId;
+      this.partial = opts && opts.partial;     // 中断时已收到的文本
+    }
+  }
+
+  // 判断某错误是否属于「配额/额度受限」类（用于触发 key 故障转移）
+  function isQuotaError(err){
+    if(!(err instanceof ApiError) || err.kind!=="http") return false;
+    if(err.status===429) return true;
+    const m=(err.apiMessage||"")+" "+(err.message||"");
+    return /RESOURCE_EXHAUSTED|quota|exceeded|rate limit/i.test(m);
+  }
+
+  // 用单个 key 发一次请求（流式优先，失败降级非流式）。失败抛 ApiError。
+  async function sendOnce(apiKey, modelId, body, o){
+    try {
+      await streamCall(modelId, apiKey, body, o);
+    } catch(streamErr){
+      // 流式中途断开（已收到部分文本）：不降级，直接上抛（保留已收文本）
+      if(streamErr instanceof ApiError && streamErr.kind==="aborted") throw streamErr;
+      // 配额类错误：直接上抛，交由上层做 key 故障转移（不降级非流式）
+      if(isQuotaError(streamErr)) throw streamErr;
+      // 其他网络/HTTP 错误：尝试降级非流式（可能拿到更清晰的 error JSON）
+      try {
+        await nonStreamCall(modelId, apiKey, body, o);
+      } catch(err){
+        throw normalizeError(err, modelId);
+      }
+    }
+  }
+
+  /**
+   * 发送一次请求，支持多 key 故障转移。
+   * o 额外字段：
+   *   keys: [{label,key}]   多 key 列表（优先于单 apiKey）
+   *   startIndex: number    从第几个 key 开始
+   *   genConfig: object     generationConfig 覆盖（含温度）
+   *   onKeySwitch(fromLabel, toLabel)  切换 key 时回调（插系统提示用）
+   *   onUsedKey(index)      实际成功使用的 key 索引（用于按 key 记账）
+   *   hasImages: bool       是否带图（演示模式提示用）
+   */
+  async function send(o){
+    const { systemText, contents } = o;
+    const keys = (Array.isArray(o.keys) && o.keys.length) ? o.keys
+                 : (o.apiKey ? [{ label:"key 1", key:o.apiKey }] : []);
+
+    // —— 演示模式（无任何 key）——
+    if(!keys.length){
+      const lastUser = [...contents].reverse().find(c=>c.role==="user");
+      let txt = "";
+      if(lastUser){ const tp=(lastUser.parts||[]).find(p=>p.text); txt = tp ? tp.text : ""; }
+      const full = demoReply(txt, o.hasImages);
+      let i = 0;
+      const step = () => {
+        if(i < full.length){
+          const chunk = full.slice(i, i+3); i += 3;
+          o.onDelta && o.onDelta(chunk);
+          setTimeout(step, 12);
+        } else {
+          o.onDone && o.onDone({ text: full, usage: { promptTokenCount:0, candidatesTokenCount:0, totalTokenCount:0 }, demo:true });
+        }
+      };
+      step();
+      return;
+    }
+
+    const body = {
+      contents,
+      systemInstruction: { parts:[{ text: systemText }] },
+      generationConfig: o.genConfig || CONFIG.generationConfig
+    };
+
+    const modelId = o.modelId;
+    let idx = (typeof o.startIndex==="number" && o.startIndex>=0 && o.startIndex<keys.length) ? o.startIndex : 0;
+    let triedCount = 0;
+    let lastErr = null;
+    const total = keys.length;
+
+    while(triedCount < total){
+      const cur = keys[idx];
+      try {
+        await sendOnce(cur.key, modelId, body, o);
+        o.onUsedKey && o.onUsedKey(idx);
+        return; // 成功（onDone 已在 sendOnce 内回调）
+      } catch(err){
+        lastErr = err;
+        // 流式中断：保留已收文本，不切 key（属于网络抖动，重试更合理）
+        if(err instanceof ApiError && err.kind==="aborted"){
+          o.onError && o.onError(err, true); return;
+        }
+        // 配额类：切到下一个 key 重试
+        if(isQuotaError(err) && total>1){
+          const nextIdx = (idx+1)%total;
+          triedCount++;
+          if(triedCount>=total) break; // 已走完一轮
+          const fromLabel = cur.label || ("key "+(idx+1));
+          const toLabel = keys[nextIdx].label || ("key "+(nextIdx+1));
+          o.onKeySwitch && o.onKeySwitch(fromLabel, toLabel, idx, nextIdx);
+          idx = nextIdx;
+          continue;
+        }
+        // 其他错误：直接报错，不再轮询
+        o.onError && o.onError(normalizeError(err, modelId), true);
+        return;
+      }
+    }
+    // 全部 key 都额度受限
+    o.onError && o.onError(normalizeError(lastErr, modelId), true);
+  }
+
+  // 把 fetch 抛出的原始异常包装成统一的 ApiError
+  function wrapFetchFailure(rawErr, modelId){
+    // fetch 真网络层失败抛 TypeError（Failed to fetch / NetworkError）
+    if(rawErr instanceof ApiError) return rawErr;
+    if(rawErr instanceof TypeError || /Failed to fetch|NetworkError|network/i.test(rawErr && rawErr.message || "")){
+      return new ApiError("network", { modelId, message: rawErr && rawErr.message });
+    }
+    return new ApiError("network", { modelId, message: rawErr && rawErr.message });
+  }
+
+  function normalizeError(err, modelId){
+    if(err instanceof ApiError) return err;
+    return wrapFetchFailure(err, modelId);
+  }
+
+  // 解析 HTTP 非 200 响应，提取 Google 的 error.message
+  async function readHttpError(resp, modelId){
+    let apiMessage = "";
+    try {
+      const t = await resp.text();
+      try { const j = JSON.parse(t); apiMessage = j?.error?.message || ""; }
+      catch(_){ apiMessage = (t||"").slice(0,300); }
+    } catch(_){ /* 读不到正文 */ }
+    return new ApiError("http", { status: resp.status, apiMessage, modelId,
+      message: "HTTP "+resp.status+(apiMessage?(" "+apiMessage):"") });
+  }
+
+  async function streamCall(modelId, apiKey, body, o){
+    const url = `${CONFIG.apiBase}/${encodeURIComponent(modelId)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(apiKey)}`;
+    let resp;
+    try {
+      resp = await fetch(url, {
+        method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body)
+      });
+    } catch(netErr){
+      throw wrapFetchFailure(netErr, modelId);   // 真网络层失败
+    }
+    if(!resp.ok){
+      throw await readHttpError(resp, modelId);
+    }
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buf = "", full = "", usage = null;
+    try {
+      while(true){
+        const { done, value } = await reader.read();
+        if(done) break;
+        buf += decoder.decode(value, { stream:true });
+        // SSE 按行解析，data: 开头
+        let idx;
+        while((idx = buf.indexOf("\n")) >= 0){
+          const line = buf.slice(0, idx).trim();
+          buf = buf.slice(idx+1);
+          if(!line.startsWith("data:")) continue;
+          const jsonStr = line.slice(5).trim();
+          if(jsonStr === "[DONE]") continue;
+          try {
+            const data = JSON.parse(jsonStr);
+            const parts = data?.candidates?.[0]?.content?.parts;
+            if(parts){
+              for(const p of parts){ if(p.text){ full += p.text; o.onDelta && o.onDelta(p.text); } }
+            }
+            if(data.usageMetadata) usage = data.usageMetadata;
+          } catch(e){ /* 单行解析失败忽略，等待更多数据 */ }
+        }
+      }
+    } catch(streamBreak){
+      // 流已经开始（拿到了部分文本），但读取中途断开
+      throw new ApiError("aborted", { modelId, partial: full, message: streamBreak && streamBreak.message });
+    }
+    o.onDone && o.onDone({ text: full, usage: usage || { promptTokenCount:0, candidatesTokenCount:0, totalTokenCount:0 } });
+  }
+
+  async function nonStreamCall(modelId, apiKey, body, o){
+    const url = `${CONFIG.apiBase}/${encodeURIComponent(modelId)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    let resp;
+    try {
+      resp = await fetch(url, {
+        method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body)
+      });
+    } catch(netErr){
+      throw wrapFetchFailure(netErr, modelId);
+    }
+    if(!resp.ok){
+      throw await readHttpError(resp, modelId);
+    }
+    const data = await resp.json();
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    const text = parts.map(p=>p.text||"").join("");
+    o.onDelta && o.onDelta(text); // 一次性给出
+    o.onDone && o.onDone({ text, usage: data.usageMetadata || { promptTokenCount:0, candidatesTokenCount:0, totalTokenCount:0 } });
+  }
+
+  // 把 ApiError 翻成给用户看的「主提示 + 原始小字」结构
+  // 返回 {main:主提示, detail:原始 error.message（可空）, kind, partial}
+  function explainError(err){
+    if(!(err instanceof ApiError)){
+      return { main:"出错了："+((err&&err.message)||"未知错误").slice(0,120)+"。请重试。", detail:"", kind:"unknown" };
+    }
+    if(err.kind==="network"){
+      return { main:"网络连接失败：浏览器无法访问 generativelanguage.googleapis.com。请检查网络/代理后重试。",
+               detail: err.message||"", kind:"network" };
+    }
+    if(err.kind==="aborted"){
+      return { main:"回答中断：连接在传输过程中断开。已为你保留收到的部分内容，可点重试续接。",
+               detail: err.message||"", kind:"aborted", partial: err.partial||"" };
+    }
+    // http
+    const s = err.status||0;
+    let main;
+    if(s===400) main = "请求无效（400）：常见原因是 API key 格式错误，或模型名不存在。";
+    else if(s===401||s===403) main = "API key 无效或无权限（"+s+"）：请到设置里检查 key 是否填对、是否已开通。";
+    else if(s===404) main = "模型不存在（404）：当前模型名为「"+(err.modelId||"?")+"」，可在设置中修改。";
+    else if(s===429) main = "请求过于频繁或额度受限（429）：请稍候再试，或切换到快速模式。";
+    else if(s===500||s===503) main = "Google 服务端暂时故障（"+s+"）：请稍后重试。";
+    else main = "服务返回错误（HTTP "+s+"）。请重试。";
+    return { main, detail: err.apiMessage||"", kind:"http", status:s };
+  }
+
+  // 旧接口保留：返回纯文本（兼容个别仍用字符串的地方）
+  function friendlyError(err){ return explainError(err).main; }
+
+  // 测试连接：固定用快速模型（flash）测 key 与网络连通性，返回 {ok, info}
+  // 说明：深度模式(3.1 Pro)是 thinking 模型，思考耗时长，用它测连接常假超时；
+  //       测的本质是「网络 + key 是否通」，用最快的 flash 即可，超时放宽到 30 秒。
+  async function testConnection(apiKey, flashModelId){
+    if(!apiKey) return { ok:false, info:{ main:"尚未填写 API key（当前为演示模式）。请先填入 key 再测试。", detail:"", kind:"nokey" } };
+    const modelId = flashModelId || CONFIG.models.flash.id;
+    const url = `${CONFIG.apiBase}/${encodeURIComponent(modelId)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const body = { contents:[{ role:"user", parts:[{ text:"你好" }] }],
+                   generationConfig:{ temperature:0, maxOutputTokens:64 } };
+    let resp;
+    // 30 秒超时：用 AbortController，超时后中断 fetch，避免永远卡在「测试中…」
+    const ctrl = new AbortController();
+    let timedOut = false;
+    const timer = setTimeout(()=>{ timedOut = true; try{ ctrl.abort(); }catch(_){} }, 30000);
+    try {
+      resp = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
+    } catch(netErr){
+      if(timedOut){
+        return { ok:false, info:{ main:"连接超时（30秒无响应）：通常是网络/代理无法到达 Google API。", detail:"", kind:"timeout" } };
+      }
+      return { ok:false, info: explainError(wrapFetchFailure(netErr, modelId)) };
+    } finally {
+      clearTimeout(timer);
+    }
+    if(!resp.ok){
+      return { ok:false, info: explainError(await readHttpError(resp, modelId)) };
+    }
+    let data=null; try{ data = await resp.json(); }catch(_){}
+    const txt = data?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("") || "";
+    return { ok:true, info:{ main:"连接成功！key 与网络均正常（用快速模型「"+modelId+"」测试）。", detail:"模型回应："+(txt.slice(0,40)||"(空)"), kind:"ok" } };
+  }
+
+  return { send, demoReply, explainError, friendlyError, testConnection };
+})();
+
+/* ==================== ⑤ ui 层 ==================== */
+
+/* ---------- 工具函数 ---------- */
+const $ = (sel,root=document)=>root.querySelector(sel);
+const $$ = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
+const uid = ()=> Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const esc = (s)=> (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+function toast(msg, ms=2400){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._t); t._t = setTimeout(()=> t.classList.remove("show"), ms);
+}
+// 右下角红色错误 toast：中文提示 + 错误摘要，可点 × 关闭，10 秒自动消失
+function errorToast(summary){
+  try{
+    const wrap=$("#errToastWrap"); if(!wrap) return;
+    const el=document.createElement("div"); el.className="err-toast";
+    el.innerHTML='<div class="et-body"><div class="et-title">⚠️ 程序出错了</div>'+
+      '<div>'+esc((summary||"未知错误").slice(0,200))+'</div></div>'+
+      '<div class="et-x" title="关闭">×</div>';
+    const remove=()=>{ if(el.parentNode) el.parentNode.removeChild(el); };
+    el.querySelector(".et-x").addEventListener("click", remove);
+    wrap.appendChild(el);
+    setTimeout(remove, 10000);
+  }catch(_){ /* 错误处理自身别再抛 */ }
+}
+function setupGlobalErrorHandlers(){
+  window.onerror = function(message, source, lineno, colno, error){
+    try{ console.error("[全局错误]", message, source+":"+lineno+":"+colno, error && error.stack || error); }catch(_){}
+    errorToast((message||"脚本错误")+( (lineno!=null)?("（第"+lineno+"行）"):"" ));
+    return false; // 不阻止默认行为
+  };
+  window.onunhandledrejection = function(ev){
+    const reason = ev && ev.reason;
+    const msg = (reason && (reason.message || reason)) || "未处理的异步错误";
+    try{ console.error("[未处理的Promise拒绝]", reason && reason.stack || reason); }catch(_){}
+    errorToast(String(msg));
+  };
+}
+function monthKey(d=new Date()){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
+function dayKey(d=new Date()){ return monthKey(d)+"-"+String(d.getDate()).padStart(2,"0"); }
+
+// 时间显示：当天显示 HH:MM，跨天显示 月-日 HH:MM
+function fmtTime(ts){
+  const d = new Date(ts), now = new Date();
+  const hm = String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  const sameDay = d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate();
+  return sameDay ? hm : (d.getMonth()+1)+"月"+d.getDate()+"日 "+hm;
+}
+// 相对时间（会话列表）
+function relTime(ts){
+  const diff = Date.now()-ts, m=60000, h=3600000, day=86400000;
+  if(diff<m) return "刚刚";
+  if(diff<h) return Math.floor(diff/m)+"分钟前";
+  if(diff<day) return Math.floor(diff/h)+"小时前";
+  if(diff<day*7) return Math.floor(diff/day)+"天前";
+  const d=new Date(ts); return (d.getMonth()+1)+"月"+d.getDate()+"日";
+}
+
+/* ---------- 轻量 Markdown 渲染（无外部库） ---------- */
+function mdToHtml(md){
+  md = md || "";
+  // 先抽取代码块，避免内部被转义/处理
+  const codeBlocks = [];
+  md = md.replace(/```([\s\S]*?)```/g, (m,code)=>{
+    codeBlocks.push(code.replace(/^\w*\n/,"")); return "@@CODEBLOCK"+(codeBlocks.length-1)+"@@";
+  });
+  md = esc(md);
+  // 表格
+  md = md.replace(/(^\|.*\|[ \t]*\n\|[ \t:\-|]+\|[ \t]*\n(?:\|.*\|[ \t]*\n?)*)/gm, (block)=>{
+    const rows = block.trim().split("\n");
+    const header = rows[0].split("|").slice(1,-1).map(s=>s.trim());
+    const bodyRows = rows.slice(2).map(r=>r.split("|").slice(1,-1).map(s=>s.trim()));
+    let h = "<table><thead><tr>"+header.map(c=>"<th>"+inline(c)+"</th>").join("")+"</tr></thead><tbody>";
+    bodyRows.forEach(r=>{ h+="<tr>"+r.map(c=>"<td>"+inline(c)+"</td>").join("")+"</tr>"; });
+    return h+"</tbody></table>";
+  });
+  // 标题
+  md = md.replace(/^### (.*)$/gm,"<h3>$1</h3>").replace(/^## (.*)$/gm,"<h2>$1</h2>").replace(/^# (.*)$/gm,"<h1>$1</h1>");
+  // 引用
+  md = md.replace(/^(?:&gt; ?.*(?:\n|$))+/gm, (block)=>{
+    const inner = block.replace(/^&gt; ?/gm,"").trim();
+    return "<blockquote>"+inline(inner).replace(/\n/g,"<br>")+"</blockquote>\n";
+  });
+  // 列表
+  md = md.replace(/(?:^(?:\d+\.) .*(?:\n|$))+/gm, (block)=>{
+    const items = block.trim().split("\n").map(l=>l.replace(/^\d+\.\s+/,""));
+    return "<ol>"+items.map(i=>"<li>"+inline(i)+"</li>").join("")+"</ol>\n";
+  });
+  md = md.replace(/(?:^[-*•] .*(?:\n|$))+/gm, (block)=>{
+    const items = block.trim().split("\n").map(l=>l.replace(/^[-*•]\s+/,""));
+    return "<ul>"+items.map(i=>"<li>"+inline(i)+"</li>").join("")+"</ul>\n";
+  });
+  // 在整块的块级元素前后补空行（只匹配独立成段的完整块，惰性匹配最外层），
+  // 确保段落分割时它们独立成块，避免 <p> 把 <ul>/<pre>/<table> 包进去
+  md = md.replace(/(<(ul|ol|blockquote|table|pre|h[1-6])[\s>][\s\S]*?<\/\2>)/g, "\n\n$1\n\n");
+  // 段落：把剩余文本按空行分段；本身就是块级 HTML 的原样保留
+  md = md.split(/\n{2,}/).map(chunk=>{
+    const t = chunk.trim();
+    if(t==="") return "";
+    if(/^<(h[1-6]|ul|ol|blockquote|table|pre)[\s>]/.test(t)) return t;
+    return "<p>"+inline(t).replace(/\n/g,"<br>")+"</p>";
+  }).join("\n");
+  // 还原代码块
+  md = md.replace(/(?:<p>)?@@CODEBLOCK(\d+)@@(?:<\/p>)?/g, (m,i)=> "<pre><code>"+esc(codeBlocks[+i])+"</code></pre>");
+  return md;
+  function inline(s){
+    return s
+      .replace(/`([^`]+)`/g,"<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>")
+      .replace(/(?<![*])\*([^*\n]+)\*(?![*])/g,"<em>$1</em>");
+  }
+}
+
+/* ---------- 全局状态 ---------- */
+const State = {
+  settings: null,        // {keys:[{label,key}], activeKeyIndex, monthlyLimit, modelPro, modelFlash, fontSize, temperature, tempEnabled, tplOverrides:{}, usage:{月:{keyIdx:{total,byDay:{}}}}}
+  sessions: [],
+  currentSessionId: null,
+  messages: {},          // id -> message 节点（当前会话）
+  rootIds: [],           // 当前会话根消息
+  pathLeafId: null,      // 当前显示路径的叶子（用于继续追加）
+  tier: "pro",           // pro / flash
+  streaming: false,
+  patients: [],          // 患者医案列表
+  sbTab: "chat",         // 侧边栏 tab：chat / patient
+  viewingPatientId: null // 当前在详情面板查看的患者
+};
+
+/* ---------- 消息树 ---------- */
+/* message 节点：{id, sessionId, parentId, childIds:[], role, content, timestamp, tokenUsage} */
+function newMessageNode(sessionId, parentId, role, content, images){
+  const node = { id:uid(), sessionId, parentId:parentId||null, childIds:[], role, content,
+           timestamp:Date.now(), tokenUsage:null };
+  if(Array.isArray(images) && images.length){
+    // 只存 {mimeType, dataB64}，previewUrl 运行时由 dataB64 重建
+    node.images = images.map(im=>({ mimeType:im.mimeType||"image/jpeg", dataB64:im.dataB64 }));
+  }
+  return node;
+}
+// 从根沿"最后一个子节点"走到叶，得到当前显示路径
+function computePath(){
+  // 选取路径：从 pathLeafId 回溯到根；若无则从首个根沿最新子链
+  const msgs = State.messages;
+  if(State.pathLeafId && msgs[State.pathLeafId]){
+    const path = [];
+    let cur = msgs[State.pathLeafId];
+    while(cur){ path.unshift(cur); cur = cur.parentId ? msgs[cur.parentId] : null; }
+    return path;
+  }
+  // 默认：从第一个根，沿最后 child
+  const path = [];
+  let cur = State.rootIds.length ? msgs[State.rootIds[State.rootIds.length-1]] : null;
+  while(cur){ path.push(cur); cur = cur.childIds.length ? msgs[cur.childIds[cur.childIds.length-1]] : null; }
+  if(path.length) State.pathLeafId = path[path.length-1].id;
+  return path;
+}
+// 重建本地索引
+function indexMessages(list){
+  State.messages = {}; State.rootIds = [];
+  list.forEach(m=>{ State.messages[m.id]=m; });
+  list.forEach(m=>{ if(!m.parentId) State.rootIds.push(m.id); });
+  // 按时间排序根与子
+  State.rootIds.sort((a,b)=> State.messages[a].timestamp - State.messages[b].timestamp);
+  list.forEach(m=> m.childIds.sort((a,b)=> (State.messages[a]?.timestamp||0)-(State.messages[b]?.timestamp||0)));
+}
+
+/* ---------- 会话管理 ---------- */
+async function loadSettings(){
+  // 多 key：keys=[{label, key}]；向后兼容旧的单 apiKey 字段
+  let keys = await DB.getSetting("keys", null);
+  const legacyKey = await DB.getSetting("apiKey", "");
+  if(!Array.isArray(keys)){
+    keys = (legacyKey && legacyKey.trim()) ? [{ label:"key 1", key:legacyKey.trim() }] : [];
+    if(keys.length) await DB.setSetting("keys", keys); // 迁移落库
+  }
+  let activeKeyIndex = await DB.getSetting("activeKeyIndex", 0);
+  if(typeof activeKeyIndex!=="number" || activeKeyIndex<0 || activeKeyIndex>=keys.length) activeKeyIndex = 0;
+
+  // 温度：tempEnabled=false 表示不传 temperature（跟随模型默认）
+  const temperature = await DB.getSetting("temperature", 0.7);
+  const tempEnabled = await DB.getSetting("tempEnabled", false);
+
+  // 模板/人设的用户自定义覆盖：{模板key 或 "__default__": "覆盖文本"}
+  const tplOverrides = await DB.getSetting("tplOverrides", {});
+
+  State.settings = {
+    keys, activeKeyIndex,
+    monthlyLimit:  await DB.getSetting("monthlyLimit", CONFIG.defaultMonthlyLimit),
+    modelPro:      await DB.getSetting("modelPro", CONFIG.models.pro.id),
+    modelFlash:    await DB.getSetting("modelFlash", CONFIG.models.flash.id),
+    fontSize:      await DB.getSetting("fontSize", CONFIG.defaultFontSize),
+    temperature, tempEnabled,
+    tplOverrides:  (tplOverrides && typeof tplOverrides==="object") ? tplOverrides : {},
+    usage:         await DB.getSetting("usage", {}),  // {月份:{keyIdx:{total, byDay:{日:{cost,in,out}}}}}
+    quotaWarned:   await DB.getSetting("quotaWarned", {}) // {月份:{keyIdx:{w80,w100}}}
+  };
+  document.documentElement.setAttribute("data-fontsize", State.settings.fontSize);
+}
+function modelIdForTier(tier){
+  return tier==="flash" ? State.settings.modelFlash : State.settings.modelPro;
+}
+// 当前激活 key 的字符串（无 key 时返回空 → 演示模式）
+function activeKey(){
+  const s=State.settings;
+  if(!s.keys || !s.keys.length) return "";
+  const k=s.keys[s.activeKeyIndex] || s.keys[0];
+  return (k && k.key) || "";
+}
+// 组装本次请求的 generationConfig：勾选「默认」则不传 temperature
+function buildGenConfig(){
+  const cfg = { maxOutputTokens: CONFIG.generationConfig.maxOutputTokens };
+  if(State.settings && State.settings.tempEnabled){
+    cfg.temperature = State.settings.temperature;
+  }
+  return cfg;
+}
+
+async function refreshSessions(){
+  State.sessions = await DB.allSessions();
+  renderSessions();
+}
+
+async function createSession(opts){
+  opts = opts || {};
+  const s = { id:uid(), title:opts.title||"新对话", createdAt:Date.now(), updatedAt:Date.now(),
+              templateKey:opts.templateKey||null,
+              patientId:opts.patientId||null };   // 模板/患者关联 会话级
+  await DB.putSession(s);
+  await refreshSessions();
+  await openSession(s.id);
+  closeSidebarOnMobile();
+  return s;
+}
+
+async function openSession(id){
+  State.currentSessionId = id;
+  State.pathLeafId = null;
+  const list = await DB.messagesBySession(id);
+  indexMessages(list);
+  const sess = State.sessions.find(s=>s.id===id) || await DB.getSession(id);
+  // 同步模板按钮高亮
+  setActiveTemplate(sess ? sess.templateKey : null, false);
+  $("#convTitle").textContent = sess ? sess.title : "中医学习助手";
+  renderSessions();
+  renderStream();
+}
+
+async function renameSession(id){
+  const s = State.sessions.find(x=>x.id===id); if(!s) return;
+  const name = await promptDialog("重命名对话", s.title);
+  if(name===null) return;
+  s.title = name.trim() || "未命名对话";
+  await DB.putSession(s);
+  await refreshSessions();
+  if(id===State.currentSessionId) $("#convTitle").textContent = s.title;
+}
+
+async function deleteSession(id){
+  const s = State.sessions.find(x=>x.id===id);
+  const ok = await confirmDialog("删除对话", "确定要删除「"+(s?s.title:"该")+"」这个对话吗？删除后无法恢复。");
+  if(!ok) return;
+  await DB.delMessagesBySession(id);
+  await DB.delSession(id);
+  if(id===State.currentSessionId){ State.currentSessionId=null; State.messages={}; State.rootIds=[]; State.pathLeafId=null; }
+  await refreshSessions();
+  if(State.currentSessionId) await openSession(State.currentSessionId);
+  else if(State.sessions.length) await openSession(State.sessions[0].id);
+  else { $("#convTitle").textContent="中医学习助手"; renderStream(); }
+}
+
+/* ---------- 渲染：会话列表 ---------- */
+function renderSessions(){
+  const box = $("#sessList"); box.innerHTML="";
+  if(!State.sessions.length){
+    box.innerHTML = '<div style="padding:20px;color:var(--ink-soft);text-align:center;">还没有对话<br>点上面的「新建对话」开始吧</div>';
+    return;
+  }
+  State.sessions.forEach(s=>{
+    const div = document.createElement("div");
+    div.className = "sess-item"+(s.id===State.currentSessionId?" active":"");
+    div.innerHTML =
+      '<div class="title">'+esc(s.title)+'</div>'+
+      '<div class="meta"><span>'+relTime(s.updatedAt)+'</span>'+
+      '<span class="sess-acts">'+
+        '<button data-act="rename">重命名</button>'+
+        '<button data-act="del">删除</button>'+
+      '</span></div>';
+    div.addEventListener("click",(e)=>{
+      const act = e.target.getAttribute("data-act");
+      if(act==="rename"){ e.stopPropagation(); renameSession(s.id); }
+      else if(act==="del"){ e.stopPropagation(); deleteSession(s.id); }
+      else { openSession(s.id); closeSidebarOnMobile(); }
+    });
+    box.appendChild(div);
+  });
+}
+
+/* ---------- 渲染：消息流 ---------- */
+function renderStream(){
+  try{
+    _renderStreamCore();
+  }catch(err){
+    try{ console.error("[renderStream 渲染失败]", err && err.stack || err); }catch(_){}
+    errorToast("界面渲染出错："+((err&&err.message)||err));
+    try{
+      const stream=$("#stream");
+      if(stream) stream.innerHTML='<div class="empty-state"><div class="big">⚠️</div>'+
+        '<h3 class="serif">界面渲染出错</h3>'+
+        '<p>请刷新页面。数据已保存，不会丢失。</p></div>';
+    }catch(_){}
+  }
+}
+function _renderStreamCore(){
+  const stream = $("#stream");
+  const path = computePath();
+  if(!State.currentSessionId || path.length===0){
+    stream.innerHTML = emptyStateHtml();
+    bindEmptyState();
+    updateQuickNav([]);
+    return;
+  }
+  stream.innerHTML = "";
+  // 患者关联横幅
+  const curSess = State.sessions.find(s=>s.id===State.currentSessionId);
+  if(curSess && curSess.patientId){
+    const pat = State.patients.find(p=>p.id===curSess.patientId);
+    if(pat){
+      const banner=document.createElement("div"); banner.className="pat-banner";
+      banner.textContent="📂 本对话关联患者："+pat.name+"（点击查看档案）";
+      banner.addEventListener("click", ()=> openPatientDetail(pat.id));
+      stream.appendChild(banner);
+    }
+  }
+  let lastDayKey = null;
+  path.forEach(m=>{
+    const dk = dayKey(new Date(m.timestamp));
+    if(dk !== lastDayKey){
+      stream.appendChild(renderDateSep(m.timestamp));
+      lastDayKey = dk;
+    }
+    stream.appendChild(renderMsgNode(m));
+  });
+  updateQuickNav(path);
+  scrollBottom();
+}
+
+// 居中日期分隔条
+function renderDateSep(ts){
+  const d = new Date(ts);
+  const div = document.createElement("div");
+  div.className = "date-sep";
+  div.innerHTML = '<span>'+d.getFullYear()+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日"+'</span>';
+  return div;
+}
+// 只取 HH:MM（气泡角落小字用）
+function fmtHM(ts){
+  const d = new Date(ts);
+  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
+
+function renderMsgNode(m){
+  const wrap = document.createElement("div");
+  wrap.className = "msg "+(m.role==="user"?"user":"ai");
+  wrap.dataset.id = m.id;
+  // CSS 几何头像内放一个小字：用户「我」、AI「师」
+  const avatar = m.role==="user" ? "我" : "师";
+  // 图片缩略图（仅 user 消息可能带）
+  let imgsHtml = "";
+  if(Array.isArray(m.images) && m.images.length){
+    imgsHtml = '<div class="bubble-imgs">'+ m.images.map(im=>{
+      const src = "data:"+(im.mimeType||"image/jpeg")+";base64,"+(im.dataB64||"");
+      return '<img src="'+src+'" alt="图片" loading="lazy">';
+    }).join("") +'</div>';
+  }
+  const textHtml = m.role==="user" ? esc(m.content).replace(/\n/g,"<br>") : mdToHtml(m.content);
+  const bodyHtml = imgsHtml + textHtml;
+  let acts = "";
+  if(m.role==="user"){
+    acts = '<div class="msg-acts"><button data-act="edit">✏️ 修改并重新提问</button></div>';
+  }
+  wrap.innerHTML =
+    '<div class="avatar">'+avatar+'</div>'+
+    '<div class="body">'+
+      '<div class="time">'+fmtHM(m.timestamp)+'</div>'+
+      '<div class="bubble">'+bodyHtml+'</div>'+
+      acts+
+    '</div>';
+  if(m.role==="user"){
+    wrap.querySelector('[data-act="edit"]').addEventListener("click", ()=> startEdit(m.id));
+  }
+  // 图片点击放大
+  wrap.querySelectorAll(".bubble-imgs img").forEach(im=>{
+    im.addEventListener("click", ()=> openLightbox(im.src));
+  });
+  return wrap;
+}
+
+function emptyStateHtml(){
+  return '<div class="empty-state">'+
+    '<div class="big">🌿</div>'+
+    '<h3 class="serif">您好，这里是中医学习助手</h3>'+
+    '<p>可以直接在下面输入框提问；也可以先点一个模板（如「条文学习」「方剂解析」），或用「📋 问诊单」整理症状。</p>'+
+    (State.settings && (!State.settings.keys || !State.settings.keys.length) ? '<p style="color:var(--accent);">当前为<strong>演示模式</strong>：先体验界面没问题，去「⚙️ 设置」填入 API key 后即可连接真实模型。</p>' : '')+
+    '<div class="empty-cards">'+
+      '<div class="empty-card" data-tpl="tiaowen">📖 条文学习</div>'+
+      '<div class="empty-card" data-tpl="fangji">💊 方剂解析</div>'+
+      '<div class="empty-card" data-tpl="wenzhen">🩺 问诊推演</div>'+
+      '<div class="empty-card" data-inq="1">📋 打开问诊单</div>'+
+    '</div></div>';
+}
+function bindEmptyState(){
+  $$(".empty-card").forEach(c=>{
+    c.addEventListener("click", async ()=>{
+      if(!State.currentSessionId) await createSession();
+      if(c.dataset.inq){ openInquiry(); return; }
+      const k = c.dataset.tpl; if(k){ openTemplateCard(k); }
+    });
+  });
+}
+
+function scrollBottom(){ const s=$("#stream"); s.scrollTop = s.scrollHeight; }
+
+/* ---------- 快速导航 ---------- */
+function updateQuickNav(path){
+  const userMsgs = path.filter(m=>m.role==="user");
+  const nav = $("#quickNav"), list = $("#qnList"), toggle = $("#qnToggle");
+  if(userMsgs.length < 3){ nav.classList.add("hidden"); toggle.style.display="none"; return; }
+  toggle.style.display = window.innerWidth>820 ? "flex" : "none";
+  list.innerHTML="";
+  userMsgs.forEach(m=>{
+    const item = document.createElement("div");
+    item.className="qn-item";
+    item.textContent = (m.content||"").slice(0,12) || "（空）";
+    item.title = m.content;
+    item.addEventListener("click", ()=>{
+      const el = $('#stream .msg[data-id="'+m.id+'"]');
+      if(el) el.scrollIntoView({ behavior:"smooth", block:"start" });
+    });
+    list.appendChild(item);
+  });
+}
+
+/* ---------- 模板（会话级 systemInstruction） ---------- */
+async function setActiveTemplate(key, persist){
+  const sess = State.currentSessionId ? (State.sessions.find(s=>s.id===State.currentSessionId)||await DB.getSession(State.currentSessionId)) : null;
+  if(persist && sess){ sess.templateKey = key; await DB.putSession(sess); await refreshSessions(); }
+  // 高亮按钮（含「更多」弹层里的；无模板时高亮「自由对话」）
+  $$("#tplBar .tpl-btn, #tplMorePop .tpl-btn").forEach(b=>{
+    if(b.dataset.key==="__free__") b.classList.toggle("on", !key);
+    else b.classList.toggle("on", b.dataset.key===key);
+  });
+  // 选了折叠区的模板时，让「更多」按钮也带高亮提示
+  const moreBtn=$("#tplMoreBtn");
+  if(moreBtn) moreBtn.classList.toggle("on", TPL_MORE.indexOf(key)>=0);
+  // 标签 + 占位
+  const tpl = TEMPLATES.find(t=>t.key===key);
+  const tag = $("#activeTplTag");
+  if(tpl){
+    tag.style.display="flex";
+    tag.innerHTML = "已选模板："+tpl.icon+tpl.name+' <span class="x" title="取消模板">✕ 取消</span>';
+    tag.querySelector(".x").onclick = ()=> setActiveTemplate(null, true);
+    $("#inputBox").placeholder = tpl.placeholder;
+  } else {
+    tag.style.display="none";
+    $("#inputBox").placeholder = "在这里输入您的问题…（按发送键提交）";
+  }
+}
+// 取某模板（或自由对话 __default__）的生效 system 文本：优先用户自定义覆盖
+function effectiveSystemFor(templateKey){
+  const ov = State.settings && State.settings.tplOverrides || {};
+  if(templateKey){
+    if(ov[templateKey] && ov[templateKey].trim()) return ov[templateKey];
+    const tpl = TEMPLATES.find(t=>t.key===templateKey);
+    return tpl ? tpl.system : DEFAULT_SYSTEM;
+  }
+  // 自由对话
+  if(ov["__default__"] && ov["__default__"].trim()) return ov["__default__"];
+  return DEFAULT_SYSTEM;
+}
+function currentSystemText(){
+  const sess = State.sessions.find(s=>s.id===State.currentSessionId);
+  const tplKey = sess && sess.templateKey ? sess.templateKey : null;
+  const base = effectiveSystemFor(tplKey);
+  let out = base + dateAwarenessSuffix();
+  // 关联患者时，附加患者医案档案
+  if(sess && sess.patientId){
+    const pat = State.patients.find(p=>p.id===sess.patientId);
+    if(pat) out += buildPatientArchiveText(pat);
+  }
+  return out;
+}
+
+// 组装注入用的患者档案文本；超长（>8000）只取基本信息 + 最近 5 次就诊
+function buildPatientArchiveText(pat){
+  const basic = patientBasicText(pat);
+  const visits = (pat.visits||[]).slice().sort((a,b)=> (a.date||"").localeCompare(b.date||"") || (a.createdAt||0)-(b.createdAt||0));
+  function assemble(vList){
+    let t = "\n\n【患者医案档案】\n"+basic;
+    if(vList.length){
+      t += "\n\n既往就诊摘要（按时间顺序）：";
+      vList.forEach((v,i)=>{ t += "\n\n— 第"+(i+1)+"次 · "+(v.date||"日期未记录")+" —\n"+(v.summary||"（无摘要）"); });
+    } else { t += "\n\n（暂无既往就诊记录）"; }
+    t += "\n\n以上为该患者既往医案，请在本次复诊中以此为准把握病情演变，不要遗忘或编造既往信息。";
+    return t;
+  }
+  let full = assemble(visits);
+  if(full.length > 8000){
+    full = assemble(visits.slice(-5));
+  }
+  return full;
+}
+function patientBasicText(pat){
+  const age = pat.birthYear ? ((new Date().getFullYear()-pat.birthYear)+"岁（"+pat.birthYear+"年生）") : (pat.ageText||"未记录");
+  return "称呼："+(pat.name||"未记录")+
+    "\n性别："+(pat.gender||"未记录")+
+    "\n年龄："+age+
+    "\n体质/基础情况："+(pat.constitution||"未记录")+
+    "\n禁忌/慎用："+(pat.taboos||"未记录");
+}
+
+// 日期感知：给 systemInstruction 追加「今天是…」与时间标注说明
+function dateAwarenessSuffix(){
+  const d = new Date();
+  const week = ["日","一","二","三","四","五","六"][d.getDay()];
+  const ds = d.getFullYear()+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日";
+  return "\n【系统信息】今天是 "+ds+"，星期"+week+"。对话中各消息前的【时间】标注由系统自动添加，是该消息的真实发送时间，请以此为准记录和推算病程日期，不要凭感觉猜测日期。";
+}
+
+// 给发往 API 的用户消息文本加时间前缀（不影响界面显示与存储）。AI 消息不加。
+function apiPrefixForUser(ts){
+  const d = new Date(ts);
+  const p = (n)=> String(n).padStart(2,"0");
+  return "【"+d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes())+"】\n";
+}
+// 由路径消息组装 contents，并给 user 消息加时间前缀
+function buildApiContents(pathMsgs){
+  return pathMsgs.filter(m=>m.role==="user"||m.role==="model").map(m=>{
+    const text = m.role==="user" ? (apiPrefixForUser(m.timestamp)+m.content) : m.content;
+    return { role: m.role==="user"?"user":"model", parts:[{text}] };
+  });
+}
+// v3：高频模板 + 折叠模板分组
+const TPL_HFREQ = ["wenzhen","fangji","zhenjiu","yiyi"];
+const TPL_MORE  = ["tiaowen","jianbie","ceyan","yian"];
+
+function makeTplBtn(t){
+  const b = document.createElement("button");
+  b.className="tpl-btn"; b.dataset.key=t.key; b.textContent = t.icon+" "+t.name;
+  b.addEventListener("click", ()=>{ closeTplMore(); openTemplateCard(t.key); });
+  return b;
+}
+function renderTemplateBar(){
+  const bar = $("#tplBar"); bar.innerHTML="";
+  // 第一个：自由对话（=无模板）
+  const free=document.createElement("button");
+  free.className="tpl-btn free"; free.dataset.key="__free__"; free.textContent="💬 自由对话";
+  free.addEventListener("click", async ()=>{
+    if(!State.currentSessionId) await createSession();
+    await setActiveTemplate(null, true);
+  });
+  bar.appendChild(free);
+  // 高频
+  TPL_HFREQ.forEach(k=>{ const t=TEMPLATES.find(x=>x.key===k); if(t) bar.appendChild(makeTplBtn(t)); });
+  // 更多 ▾
+  const moreWrap=document.createElement("div"); moreWrap.className="tpl-more-wrap";
+  const moreBtn=document.createElement("button"); moreBtn.className="tpl-btn"; moreBtn.id="tplMoreBtn"; moreBtn.textContent="更多 ▾";
+  const pop=document.createElement("div"); pop.className="tpl-more-pop"; pop.id="tplMorePop";
+  TPL_MORE.forEach(k=>{ const t=TEMPLATES.find(x=>x.key===k); if(t) pop.appendChild(makeTplBtn(t)); });
+  moreBtn.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    if(pop.classList.contains("show")){ pop.classList.remove("show"); return; }
+    pop.classList.add("show");
+    positionTplMore(moreBtn, pop);
+  });
+  moreWrap.appendChild(moreBtn); moreWrap.appendChild(pop);
+  bar.appendChild(moreWrap);
+}
+// 弹层用 fixed 定位，按钮上方弹出、右对齐按钮；超出视口则贴边
+function positionTplMore(btn, pop){
+  const r = btn.getBoundingClientRect();
+  // 先显示以测量尺寸
+  pop.style.left="0px"; pop.style.top="0px";
+  const pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let left = r.right - pw;            // 右对齐按钮右缘
+  if(left < 8) left = 8;
+  if(left + pw > window.innerWidth-8) left = window.innerWidth-8-pw;
+  let top = r.top - ph - 8;           // 弹在按钮上方
+  if(top < 8) top = r.bottom + 8;     // 上方放不下则弹到下方
+  pop.style.left = left+"px";
+  pop.style.top = top+"px";
+}
+function closeTplMore(){ const p=$("#tplMorePop"); if(p) p.classList.remove("show"); }
+
+/* 模板说明卡：点击任何模板先弹说明，确认后才激活 */
+function openTemplateCard(key){
+  const t = TEMPLATES.find(x=>x.key===key); if(!t) return;
+  const sess = State.currentSessionId ? State.sessions.find(s=>s.id===State.currentSessionId) : null;
+  const isActive = sess && sess.templateKey===key;
+  $("#tplCardTitle").textContent = t.icon+" "+t.name;
+  const body=$("#tplCardBody");
+  let egHtml = (t.examples||[]).map((eg,i)=>'<button class="tpl-eg" data-eg="'+i+'">'+esc(eg)+'</button>').join("");
+  const ov=State.settings.tplOverrides||{};
+  const customized = !!(ov[key] && ov[key].trim());
+  const effective = effectiveSystemFor(key);
+  body.innerHTML =
+    '<div class="tpl-card-brief">'+esc(t.brief||"")+(customized?'<span class="tpl-custom-badge">已自定义</span>':'')+'</div>'+
+    '<div class="tpl-card-sub">示例问题（点一下直接填入并使用）</div>'+
+    egHtml+
+    '<details class="tpl-card-full"><summary>查看完整指令</summary>'+
+      '<div style="display:flex;gap:10px;margin:8px 0;flex-wrap:wrap;">'+
+        '<button class="btn ghost small" id="tplCardEdit">✏️ 编辑</button>'+
+        (customized?'<button class="btn ghost small" id="tplCardReset">↩ 恢复默认</button>':'')+
+      '</div>'+
+      '<pre>'+esc(effective)+'</pre></details>';
+  // 编辑 / 恢复默认
+  const editBtn=$("#tplCardEdit");
+  if(editBtn) editBtn.addEventListener("click", ()=>{
+    $("#tplCardOverlay").classList.remove("show");
+    openTplEditor(key, t.name);
+  });
+  const resetBtn=$("#tplCardReset");
+  if(resetBtn) resetBtn.addEventListener("click", async ()=>{
+    const ok=await confirmDialog("恢复默认","确定把「"+t.name+"」恢复成默认指令吗？");
+    if(!ok) return;
+    delete State.settings.tplOverrides[key];
+    await DB.setSetting("tplOverrides", State.settings.tplOverrides);
+    openTemplateCard(key); // 重渲染卡片
+    toast("已恢复默认");
+  });
+  // 示例点击 = 填入输入框 + 激活模板 + 关卡
+  $$("#tplCardBody .tpl-eg").forEach(b=>{
+    b.addEventListener("click", async ()=>{
+      const i=+b.dataset.eg; const eg=(t.examples||[])[i]||"";
+      if(!State.currentSessionId) await createSession();
+      await setActiveTemplate(key, true);
+      const box=$("#inputBox"); box.value=eg; autoGrow(box);
+      $("#tplCardOverlay").classList.remove("show");
+      box.focus();
+    });
+  });
+  // 主按钮：已激活则变「取消此模式」
+  const useBtn=$("#tplCardUse");
+  if(isActive){
+    useBtn.textContent="取消此模式"; useBtn.classList.add("danger");
+    useBtn.onclick = async ()=>{ await setActiveTemplate(null, true); $("#tplCardOverlay").classList.remove("show"); };
+  } else {
+    useBtn.textContent="使用此模式"; useBtn.classList.remove("danger");
+    useBtn.onclick = async ()=>{
+      if(!State.currentSessionId) await createSession();
+      await setActiveTemplate(key, true); $("#tplCardOverlay").classList.remove("show"); $("#inputBox").focus();
+    };
+  }
+  $("#tplCardOverlay").classList.add("show");
+}
+
+/* ---------- 图片上传（多模态） ---------- */
+// 待发送图片暂存：[{mimeType, dataB64, previewUrl}]
+const pendingImages = [];
+
+// 压缩图片：最长边 ≤1280，JPEG quality 0.85，返回 {mimeType, dataB64}
+function compressImage(file){
+  return new Promise((resolve, reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error("读取图片失败"));
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error("图片解码失败"));
+      img.onload=()=>{
+        const MAX=1280;
+        let w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+        if(w>h && w>MAX){ h=Math.round(h*MAX/w); w=MAX; }
+        else if(h>=w && h>MAX){ w=Math.round(w*MAX/h); h=MAX; }
+        const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+        const ctx=cv.getContext("2d");
+        ctx.fillStyle="#fff"; ctx.fillRect(0,0,w,h); // 透明底转白，避免 JPEG 变黑
+        ctx.drawImage(img,0,0,w,h);
+        const dataUrl=cv.toDataURL("image/jpeg",0.85);
+        const dataB64=dataUrl.split(",")[1]||"";
+        resolve({ mimeType:"image/jpeg", dataB64, previewUrl:dataUrl });
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleImageFiles(fileList){
+  const files=Array.from(fileList||[]).filter(f=>f && f.type && f.type.startsWith("image/"));
+  if(!files.length) return;
+  for(const f of files){
+    if(pendingImages.length>=6){ toast("一次最多带 6 张图片"); break; }
+    try{
+      const img=await compressImage(f);
+      pendingImages.push(img);
+    }catch(e){ toast("有一张图片处理失败，已跳过"); }
+  }
+  renderImgStaging();
+}
+
+function renderImgStaging(){
+  const box=$("#imgStaging"); if(!box) return;
+  if(!pendingImages.length){ box.style.display="none"; box.innerHTML=""; return; }
+  box.style.display="flex"; box.innerHTML="";
+  pendingImages.forEach((img,i)=>{
+    const t=document.createElement("div"); t.className="img-thumb";
+    t.innerHTML='<img src="'+img.previewUrl+'" alt="待发图片"><span class="rm" title="移除">×</span>';
+    t.querySelector(".rm").addEventListener("click",()=>{ pendingImages.splice(i,1); renderImgStaging(); });
+    t.querySelector("img").addEventListener("click",()=> openLightbox(img.previewUrl));
+    box.appendChild(t);
+  });
+}
+function clearPendingImages(){ pendingImages.length=0; renderImgStaging(); }
+
+// lightbox 放大
+function openLightbox(src){
+  const lb=$("#lightbox"), im=$("#lightboxImg");
+  if(!lb||!im) return;
+  im.src=src; lb.classList.add("show");
+}
+
+/* ---------- 发送 / 接收（含树 fork） ---------- */
+async function sendMessage(text, opts){
+  opts = opts || {};
+  if(State.streaming) return;
+  text = (text||"").trim();
+  if(!text) return;
+  if(!State.currentSessionId) await createSession();
+
+  // 父节点：当前路径叶（或 opts.parentId 用于 edit fork）
+  const path = computePath();
+  let parentId = opts.parentId !== undefined ? opts.parentId : (path.length ? path[path.length-1].id : null);
+
+  // 创建 user 节点，挂到父（带本次待发图片）
+  const imgs = pendingImages.slice();
+  const userNode = newMessageNode(State.currentSessionId, parentId, "user", text, imgs);
+  clearPendingImages();
+  attachChild(parentId, userNode);
+  await DB.putMessage(userNode);
+  if(parentId && State.messages[parentId]) await DB.putMessage(State.messages[parentId]);
+  State.pathLeafId = userNode.id;
+
+  // 若会话仍是默认标题，用首问题前 18 字命名
+  const sess = State.sessions.find(s=>s.id===State.currentSessionId);
+  if(sess && (sess.title==="新对话" || !sess.title)){
+    sess.title = text.slice(0,18) || "新对话";
+    $("#convTitle").textContent = sess.title;
+  }
+  if(sess){ sess.updatedAt=Date.now(); await DB.putSession(sess); }
+  await refreshSessions();
+  renderStream();
+
+  // 创建占位的 model 节点
+  const aiNode = newMessageNode(State.currentSessionId, userNode.id, "model", "");
+  attachChild(userNode.id, aiNode);
+  State.pathLeafId = aiNode.id;
+  renderStream();
+  const aiEl = $('#stream .msg[data-id="'+aiNode.id+'"] .bubble');
+  if(aiEl) aiEl.innerHTML = '<span class="typing-cursor"></span>';
+
+  // 组装 contents：当前路径（到 userNode）的 user/model 消息（user 加时间前缀）
+  const contents = buildApiContents(pathFromRootTo(userNode.id));
+
+  State.streaming = true; setSending(true);
+  let acc = "", usedKeyIdx = State.settings.activeKeyIndex;
+  const hasImages = !!(userNode.images && userNode.images.length);
+  API.send({
+    keys: State.settings.keys,
+    startIndex: State.settings.activeKeyIndex,
+    modelId: modelIdForTier(State.tier),
+    systemText: currentSystemText(),
+    genConfig: buildGenConfig(),
+    hasImages,
+    contents,
+    onKeySwitch: (fromLabel, toLabel)=> insertKeySwitchTip(aiEl, fromLabel, toLabel),
+    onUsedKey: async (idx)=>{ usedKeyIdx = idx; await persistActiveKey(idx); },
+    onDelta: (chunk)=>{
+      acc += chunk;
+      if(aiEl) aiEl.innerHTML = mdToHtml(acc)+'<span class="typing-cursor"></span>';
+      scrollBottom();
+    },
+    onDone: async ({text, usage, demo})=>{
+      aiNode.content = text || acc;
+      aiNode.tokenUsage = usage || null;
+      await DB.putMessage(aiNode);
+      if(aiEl) aiEl.innerHTML = mdToHtml(aiNode.content);
+      State.streaming=false; setSending(false);
+      // 额度累计（演示模式不计），按实际使用的 key 记账
+      if(!demo && usage) await accrueUsage(usage, usedKeyIdx);
+      renderStream();
+    },
+    onError: async (err)=>{
+      State.streaming=false; setSending(false);
+      const info = API.explainError(err);
+      renderErrorInBubble(aiEl, info, acc, async ()=>{
+        // 删除失败的 ai 占位节点后重发同一 user（不留空气泡）
+        detachChild(userNode.id, aiNode.id);
+        delete State.messages[aiNode.id];
+        State.pathLeafId = userNode.id;
+        await resendFrom(userNode.id);
+      });
+      toast(info.main, 4000);
+    }
+  });
+}
+
+// 切换 key 时持久化激活索引（下次默认从这个 key 开始）
+async function persistActiveKey(idx){
+  if(idx===State.settings.activeKeyIndex) return;
+  State.settings.activeKeyIndex = idx;
+  await DB.setSetting("activeKeyIndex", idx);
+  renderQuota();
+}
+// 在 AI 气泡前插入一条「已切换到 key X」系统小提示
+function insertKeySwitchTip(aiEl, fromLabel, toLabel){
+  try{
+    const msgWrap = aiEl ? aiEl.closest(".msg") : null;
+    const tip=document.createElement("div"); tip.className="sys-tip";
+    tip.innerHTML='<span>已切换到 '+esc(toLabel)+'（'+esc(fromLabel)+' 额度受限）</span>';
+    if(msgWrap && msgWrap.parentNode){ msgWrap.parentNode.insertBefore(tip, msgWrap); }
+    else { const st=$("#stream"); if(st) st.appendChild(tip); }
+    scrollBottom();
+  }catch(_){}
+}
+
+// 在 AI 气泡里渲染错误（主提示 + 原始小字 + 重试按钮）。
+// 若是流式中断且有已收文本（partial 或 accText），先保留正文，再在尾部加中断标记。
+function renderErrorInBubble(aiEl, info, accText, onRetry){
+  if(!aiEl) return;
+  let html = "";
+  const partial = (info.kind==="aborted") ? (info.partial || accText || "") : "";
+  if(partial){
+    html += mdToHtml(partial);
+    html += '<div style="color:var(--warn);font-weight:600;margin-top:8px;">⚠️ 回答中断</div>';
+  } else {
+    html += '<div style="color:var(--danger);font-weight:600;">⚠️ '+esc(info.main)+'</div>';
+  }
+  if(info.detail){
+    html += '<div style="color:var(--ink-soft);font-size:var(--fs-sm);margin-top:6px;word-break:break-all;">详情：'+esc(info.detail)+'</div>';
+  }
+  html += '<div class="msg-acts"><button data-retry>🔄 重试</button></div>';
+  aiEl.innerHTML = html;
+  const rb = aiEl.querySelector("[data-retry]");
+  if(rb) rb.addEventListener("click", onRetry);
+}
+
+// 把当前 user 节点重新发起一次 AI 回复（重试用）
+async function resendFrom(userNodeId){
+  const userNode = State.messages[userNodeId]; if(!userNode) return;
+  const aiNode = newMessageNode(State.currentSessionId, userNode.id, "model", "");
+  attachChild(userNode.id, aiNode);
+  State.pathLeafId = aiNode.id;
+  renderStream();
+  const aiEl = $('#stream .msg[data-id="'+aiNode.id+'"] .bubble');
+  if(aiEl) aiEl.innerHTML='<span class="typing-cursor"></span>';
+  const contents = buildApiContents(pathFromRootTo(userNode.id));
+  State.streaming=true; setSending(true);
+  let acc="", usedKeyIdx=State.settings.activeKeyIndex;
+  const hasImages = !!(userNode.images && userNode.images.length);
+  API.send({
+    keys:State.settings.keys, startIndex:State.settings.activeKeyIndex,
+    modelId:modelIdForTier(State.tier), systemText:currentSystemText(), genConfig:buildGenConfig(), hasImages, contents,
+    onKeySwitch:(fromLabel,toLabel)=> insertKeySwitchTip(aiEl, fromLabel, toLabel),
+    onUsedKey: async (idx)=>{ usedKeyIdx=idx; await persistActiveKey(idx); },
+    onDelta:(c)=>{ acc+=c; if(aiEl) aiEl.innerHTML=mdToHtml(acc)+'<span class="typing-cursor"></span>'; scrollBottom(); },
+    onDone: async ({text,usage,demo})=>{ aiNode.content=text||acc; aiNode.tokenUsage=usage||null; await DB.putMessage(aiNode);
+      if(aiEl) aiEl.innerHTML=mdToHtml(aiNode.content); State.streaming=false; setSending(false);
+      if(!demo&&usage) await accrueUsage(usage, usedKeyIdx); renderStream(); },
+    onError: async (err)=>{ State.streaming=false; setSending(false);
+      const info=API.explainError(err);
+      renderErrorInBubble(aiEl, info, acc, async ()=>{
+        detachChild(userNode.id, aiNode.id);
+        delete State.messages[aiNode.id];
+        State.pathLeafId = userNode.id;
+        await resendFrom(userNode.id);
+      });
+      toast(info.main,4000); }
+  });
+}
+
+// 编辑用户消息：在其【父节点】上 fork 一个新 user 子节点（树结构）
+async function startEdit(userMsgId){
+  const m = State.messages[userMsgId]; if(!m) return;
+  const box = $("#inputBox");
+  box.value = m.content;
+  // 把原图片载回待发区（重建 previewUrl）
+  clearPendingImages();
+  if(Array.isArray(m.images)){
+    m.images.forEach(im=>{ if(im && im.dataB64) pendingImages.push({ mimeType:im.mimeType||"image/jpeg", dataB64:im.dataB64, previewUrl:"data:"+(im.mimeType||"image/jpeg")+";base64,"+im.dataB64 }); });
+    renderImgStaging();
+  }
+  box.focus();
+  autoGrow(box);
+  // 标记：本次发送将 fork 到该消息的父节点
+  box.dataset.editParent = (m.parentId===null ? "ROOT" : m.parentId);
+  toast("已载入这条提问，修改后点发送，将作为新的提问重新作答");
+}
+
+/* 树辅助 */
+function attachChild(parentId, node){
+  State.messages[node.id]=node;
+  if(parentId && State.messages[parentId]){
+    if(!State.messages[parentId].childIds.includes(node.id)) State.messages[parentId].childIds.push(node.id);
+  } else {
+    if(!State.rootIds.includes(node.id)) State.rootIds.push(node.id);
+  }
+}
+function detachChild(parentId, childId){
+  if(parentId && State.messages[parentId]){
+    State.messages[parentId].childIds = State.messages[parentId].childIds.filter(x=>x!==childId);
+  } else {
+    State.rootIds = State.rootIds.filter(x=>x!==childId);
+  }
+}
+function pathFromRootTo(id){
+  const path=[]; let cur=State.messages[id];
+  while(cur){ path.unshift(cur); cur=cur.parentId?State.messages[cur.parentId]:null; }
+  return path;
+}
+
+/* ---------- 额度估算（按 月 + key 索引 分别累计） ----------
+   usage 结构：{月份:{keyIdx:{total, byDay:{日:{cost,in,out}}}}}
+   keyIdx 为字符串化的 key 索引；无 key（演示）时不记账。 */
+function usageForKey(mk, keyIdx){
+  const u=State.settings.usage;
+  if(!u[mk]) u[mk]={};
+  const k=String(keyIdx);
+  if(!u[mk][k]) u[mk][k]={ total:0, byDay:{} };
+  return u[mk][k];
+}
+// keyIdx：本次实际使用的 key 索引（故障转移后可能不是 activeKeyIndex）
+async function accrueUsage(usage, keyIdx){
+  if(keyIdx===undefined || keyIdx===null) keyIdx = State.settings.activeKeyIndex;
+  const inTok = usage.promptTokenCount||0, outTok = usage.candidatesTokenCount||0;
+  const model = State.tier==="flash" ? CONFIG.models.flash : CONFIG.models.pro;
+  const cost = inTok/1e6*model.inPrice + outTok/1e6*model.outPrice;
+  const mk = monthKey(), dk = dayKey();
+  const ku = usageForKey(mk, keyIdx);
+  if(!ku.byDay[dk]) ku.byDay[dk] = { cost:0, in:0, out:0 };
+  ku.total += cost;
+  ku.byDay[dk].cost += cost;
+  ku.byDay[dk].in += inTok;
+  ku.byDay[dk].out += outTok;
+  await DB.setSetting("usage", State.settings.usage);
+  await checkQuotaAlerts(keyIdx);
+  renderQuota();
+}
+// 取某 key 本月已用金额
+function keyMonthUsed(keyIdx, mk){
+  mk = mk || monthKey();
+  const u=State.settings.usage[mk];
+  if(!u) return 0;
+  const k=u[String(keyIdx)];
+  return k ? (k.total||0) : 0;
+}
+
+async function checkQuotaAlerts(keyIdx){
+  if(keyIdx===undefined) keyIdx=State.settings.activeKeyIndex;
+  const mk=monthKey(), limit=State.settings.monthlyLimit||CONFIG.defaultMonthlyLimit;
+  const used = keyMonthUsed(keyIdx, mk);
+  if(!State.settings.quotaWarned[mk]) State.settings.quotaWarned[mk]={};
+  const k=String(keyIdx);
+  const warned = State.settings.quotaWarned[mk][k] || {};
+  const label = (State.settings.keys[keyIdx] && State.settings.keys[keyIdx].label) || ("key "+(keyIdx+1));
+  const pct = limit>0 ? used/limit : 0;
+  if(pct>=1 && !warned.w100){
+    warned.w100=true; State.settings.quotaWarned[mk][k]=warned; await DB.setSetting("quotaWarned", State.settings.quotaWarned);
+    await alertDialog("「"+label+"」本月额度已用完", "「"+label+"」本月已用 $"+used.toFixed(2)+"，达到单 key 限额 $"+limit+"。\n若有下一个 key，发送时会自动切换；也可切到「快速模式」省额度，或到设置里调高限额。");
+  } else if(pct>=0.8 && !warned.w80){
+    warned.w80=true; State.settings.quotaWarned[mk][k]=warned; await DB.setSetting("quotaWarned", State.settings.quotaWarned);
+    toast("提醒：「"+label+"」本月额度快到了（已用 "+Math.round(pct*100)+"%）", 4000);
+  }
+}
+
+function renderQuota(){
+  const mk=monthKey(), limit=State.settings.monthlyLimit||CONFIG.defaultMonthlyLimit;
+  const ki=State.settings.activeKeyIndex;
+  const hasKeys = State.settings.keys && State.settings.keys.length;
+  const used=hasKeys ? keyMonthUsed(ki, mk) : 0;
+  const pct=limit>0?Math.min(used/limit,1):0;
+  const label = hasKeys ? ((State.settings.keys[ki] && State.settings.keys[ki].label) || ("key "+(ki+1))) : "演示模式";
+  const lbl=$("#quotaLabel"); if(lbl) lbl.textContent = hasKeys ? ("本月用量 · "+label) : "本月用量";
+  $("#quotaAmt").textContent = "$"+used.toFixed(2)+" / $"+limit;
+  const fill=$("#quotaFill");
+  fill.style.width=(pct*100).toFixed(1)+"%";
+  fill.className="quota-fill"+(pct>=1?" over":pct>=0.8?" warn":"");
+}
+
+/* ---------- 问诊单 ---------- */
+/* 问诊单说明：所有字段均可跳过，未填项不进入生成文本。
+   每个 chip 组末尾带「✏️ 自填」，可加多个自定义项。 */
+const INQUIRY_SCHEMA = [
+  { id:"hanre", label:"寒热", options:["恶寒","发热","寒热往来","但热不寒","但寒不热","无明显寒热"] },
+  { id:"han", label:"汗", options:["无汗","自汗","盗汗","大汗","局部汗"] },
+  { id:"toushen", label:"头身", options:["头痛","头晕","身痛","腰痛","关节痛","乏力","无"] },
+  { id:"erbian", label:"二便", options:["便秘","便溏","腹泻","小便清长","小便短赤","夜尿多","正常"] },
+  { id:"yinshi", label:"饮食口味", options:["口苦","口干","口淡","纳差","易饥","恶心","正常"] },
+  { id:"shuimian", label:"睡眠", options:["入睡难","易醒","多梦","嗜睡","正常"] },
+  { id:"shezhi", label:"舌质", options:["淡红","淡白","红","绛","紫暗","有齿痕","有瘀斑"] },
+  { id:"shetai", label:"舌苔", options:["薄白","白腻","黄","黄腻","少苔","无苔","水滑"] }
+];
+// 详细脉诊位置与可选脉象
+const PULSE_OPTIONS = ["浮","沉","迟","数","弦","滑","细","弱","涩","濡","洪","紧","结","代","促"];
+const PULSE_POSITIONS = [
+  { id:"l_cun", label:"左寸" }, { id:"l_guan", label:"左关" }, { id:"l_chi", label:"左尺" },
+  { id:"r_cun", label:"右寸" }, { id:"r_guan", label:"右关" }, { id:"r_chi", label:"右尺" },
+  { id:"fuyang", label:"趺阳脉" }, { id:"taixi", label:"太溪脉" }
+];
+
+// 问诊单状态
+const inquiryState = {
+  chiefNone:false,           // 是否勾选「无特定主诉」
+  chiefText:"",              // 主诉文本
+  visitDate:"",             // 就诊日期 YYYY-MM-DD
+  onsetTime:"",             // 起病时间
+  onsetDesc:"",             // 初起表现
+  stages:[],                // [{time, change}] 演变阶段
+  curState:"",              // 当前状态
+  chips:{},                 // id -> [选中的内置选项]
+  custom:{},                // id -> [自定义项]，含 chips 各组 与 各脉象位置
+  pulseOverall:[],          // 整体脉象（内置）
+  pulseDetailOpen:false,
+  pulseDetail:{},           // posId -> [脉象]
+  jiwang:"",                // 既往史与用药
+  zhiliao:""                // 已做治疗及反应
+};
+
+function todayISO(){
+  const d=new Date(), p=n=>String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate());
+}
+
+// 创建一个可多选 chip 组（含自填）。selArr / customArr 为状态数组引用。
+function makeChipGroup(options, selArr, customArr){
+  const group=document.createElement("div"); group.className="chip-group";
+  options.forEach(opt=>{
+    const c=document.createElement("button"); c.className="chip"; c.textContent=opt;
+    if(selArr.includes(opt)) c.classList.add("on");
+    c.addEventListener("click", ()=>{
+      if(selArr.includes(opt)){ const i=selArr.indexOf(opt); selArr.splice(i,1); c.classList.remove("on"); }
+      else { selArr.push(opt); c.classList.add("on"); }
+    });
+    group.appendChild(c);
+  });
+  // 已有的自定义项
+  customArr.forEach(val=> group.appendChild(makeCustomChip(val, customArr, group)));
+  // 「✏️ 自填」按钮
+  const add=document.createElement("button"); add.className="chip add-chip"; add.textContent="✏️ 自填";
+  add.addEventListener("click", ()=>{
+    const inp=document.createElement("input"); inp.className="chip-inline-input"; inp.placeholder="输入后回车";
+    group.insertBefore(inp, add); inp.focus();
+    const commit=()=>{
+      const v=(inp.value||"").trim();
+      if(v && !customArr.includes(v)){ customArr.push(v); group.insertBefore(makeCustomChip(v, customArr, group), inp); }
+      inp.remove();
+    };
+    inp.addEventListener("keydown",(e)=>{ if(e.key==="Enter"){ e.preventDefault(); commit(); } else if(e.key==="Escape"){ inp.remove(); } });
+    inp.addEventListener("blur", commit);
+  });
+  group.appendChild(add);
+  return group;
+}
+// 一个已选的自定义 chip（再点可删除）
+function makeCustomChip(val, customArr, group){
+  const c=document.createElement("button"); c.className="chip custom on"; c.textContent=val+" ✕";
+  c.title="点击删除";
+  c.addEventListener("click", ()=>{ const i=customArr.indexOf(val); if(i>=0) customArr.splice(i,1); c.remove(); });
+  return c;
+}
+
+function ensureArr(obj, key){ if(!Array.isArray(obj[key])) obj[key]=[]; return obj[key]; }
+
+function buildInquiryForm(){
+  const S=inquiryState;
+  if(!S.visitDate) S.visitDate=todayISO();
+  const body = $("#inquiryBody"); body.innerHTML="";
+
+  /* —— 主诉（含「无特定主诉」） —— */
+  const secChief=document.createElement("div"); secChief.className="inq-section";
+  secChief.innerHTML='<div class="sec-label">主诉</div><div class="inq-hint-sub">可留空。若只是日常调理或学习咨询，勾选下面这项即可。</div>';
+  const chiefGrp=document.createElement("div"); chiefGrp.className="chip-group";
+  const noneChip=document.createElement("button"); noneChip.className="chip warm"+(S.chiefNone?" on":"");
+  noneChip.textContent="无特定主诉（日常调理/学习咨询）";
+  noneChip.addEventListener("click",()=>{ S.chiefNone=!S.chiefNone; noneChip.classList.toggle("on", S.chiefNone); });
+  chiefGrp.appendChild(noneChip); secChief.appendChild(chiefGrp);
+  const chiefInp=document.createElement("input"); chiefInp.type="text";
+  chiefInp.placeholder="例如：反复头痛三天，遇风加重（可不填）";
+  chiefInp.style.cssText="width:100%;margin-top:10px;padding:13px 14px;border-radius:14px;border:2px solid var(--line);";
+  chiefInp.value=S.chiefText||"";
+  chiefInp.addEventListener("input",()=> S.chiefText=chiefInp.value);
+  secChief.appendChild(chiefInp);
+  body.appendChild(secChief);
+
+  /* —— 病程演化 —— */
+  const secCourse=document.createElement("div"); secCourse.className="inq-section";
+  secCourse.innerHTML='<div class="sec-label">病程演化</div><div class="inq-hint-sub">病是一个过程。把起病到现在的演变讲清楚，有助于精准辨证。各项均可留空。</div>';
+  // 就诊日期
+  secCourse.appendChild(fieldRow("就诊日期", ()=>{
+    const i=document.createElement("input"); i.type="date"; i.value=S.visitDate;
+    i.style.cssText="padding:11px 12px;border-radius:12px;border:2px solid var(--line);background:#fff;";
+    i.addEventListener("input",()=> S.visitDate=i.value); return i;
+  }));
+  // 起病时间
+  secCourse.appendChild(fieldRow("起病时间", ()=>{
+    const i=document.createElement("input"); i.type="text"; i.placeholder='如"5月28日"或"约两周前"';
+    i.style.cssText="width:100%;padding:11px 12px;border-radius:12px;border:2px solid var(--line);background:#fff;";
+    i.value=S.onsetTime||""; i.addEventListener("input",()=> S.onsetTime=i.value); return i;
+  }));
+  // 初起表现
+  secCourse.appendChild(fieldRow("初起表现", ()=>{
+    const t=document.createElement("textarea"); t.rows=2; t.placeholder="刚发病时是什么样子的";
+    t.style.cssText="width:100%;padding:11px 12px;border-radius:12px;border:2px solid var(--line);background:#fff;";
+    t.value=S.onsetDesc||""; t.addEventListener("input",()=> S.onsetDesc=t.value); return t;
+  }));
+  // 演变过程（动态阶段）
+  const evoLabel=document.createElement("div"); evoLabel.style.cssText="font-weight:700;margin-top:12px;color:var(--ink);";
+  evoLabel.textContent="演变过程（按时间一条条记）"; secCourse.appendChild(evoLabel);
+  const stagesBox=document.createElement("div"); secCourse.appendChild(stagesBox);
+  function renderStages(){
+    stagesBox.innerHTML="";
+    S.stages.forEach((st,idx)=>{
+      const row=document.createElement("div"); row.className="stage-row";
+      const t1=document.createElement("input"); t1.className="st-time"; t1.placeholder="时间点 如6月2日起";
+      t1.value=st.time||""; t1.addEventListener("input",()=> st.time=t1.value);
+      const t2=document.createElement("input"); t2.className="st-chg"; t2.placeholder="表现变化 如咳嗽从干咳转为有痰";
+      t2.value=st.change||""; t2.addEventListener("input",()=> st.change=t2.value);
+      const del=document.createElement("button"); del.className="st-del"; del.textContent="✕";
+      del.title="删除这一阶段";
+      del.addEventListener("click",()=>{ S.stages.splice(idx,1); renderStages(); });
+      row.appendChild(t1); row.appendChild(t2); row.appendChild(del);
+      stagesBox.appendChild(row);
+    });
+  }
+  renderStages();
+  const addStage=document.createElement("button"); addStage.className="add-stage-btn"; addStage.textContent="＋ 添加一个阶段";
+  addStage.addEventListener("click",()=>{ S.stages.push({time:"",change:""}); renderStages(); });
+  secCourse.appendChild(addStage);
+  // 当前状态
+  secCourse.appendChild(fieldRow("当前状态", ()=>{
+    const t=document.createElement("textarea"); t.rows=2; t.placeholder="现在最主要的不适、近一两天的情况";
+    t.style.cssText="width:100%;padding:11px 12px;border-radius:12px;border:2px solid var(--line);background:#fff;margin-top:8px;";
+    t.value=S.curState||""; t.addEventListener("input",()=> S.curState=t.value); return t;
+  }));
+  body.appendChild(secCourse);
+
+  /* —— 各通用 chip 组 —— */
+  INQUIRY_SCHEMA.forEach(f=>{
+    const sec=document.createElement("div"); sec.className="inq-section";
+    sec.innerHTML='<div class="sec-label">'+f.label+'</div>';
+    const sel=ensureArr(S.chips, f.id);
+    const cus=ensureArr(S.custom, f.id);
+    sec.appendChild(makeChipGroup(f.options, sel, cus));
+    body.appendChild(sec);
+  });
+
+  /* —— 脉象（整体 + 可展开详细脉诊） —— */
+  const secMai=document.createElement("div"); secMai.className="inq-section";
+  secMai.innerHTML='<div class="sec-label">脉象</div><div class="inq-hint-sub">先选整体脉象即可；需要更细可展开六部脉诊。</div>';
+  const overallLabel=document.createElement("div"); overallLabel.style.cssText="font-weight:700;margin-bottom:4px;color:var(--ink);";
+  overallLabel.textContent="整体脉象（可多选）"; secMai.appendChild(overallLabel);
+  secMai.appendChild(makeChipGroup(PULSE_OPTIONS, S.pulseOverall, ensureArr(S.custom,"pulseOverall")));
+  // 展开开关
+  const tog=document.createElement("div"); tog.className="pulse-toggle";
+  const sw=document.createElement("div"); sw.className="switch"+(S.pulseDetailOpen?" on":"");
+  const swLabel=document.createElement("span"); swLabel.textContent="展开详细脉诊（左右手寸关尺 + 趺阳/太溪）";
+  tog.appendChild(sw); tog.appendChild(swLabel); secMai.appendChild(tog);
+  const detail=document.createElement("div"); detail.className="pulse-detail";
+  detail.style.display=S.pulseDetailOpen?"block":"none";
+  PULSE_POSITIONS.forEach(pos=>{
+    const pp=document.createElement("div"); pp.className="pulse-pos";
+    pp.innerHTML='<div class="pp-label">'+pos.label+'</div>';
+    const sel=ensureArr(S.pulseDetail, pos.id);
+    const cus=ensureArr(S.custom, "pulse_"+pos.id);
+    pp.appendChild(makeChipGroup(PULSE_OPTIONS, sel, cus));
+    detail.appendChild(pp);
+  });
+  secMai.appendChild(detail);
+  sw.addEventListener("click",()=>{
+    S.pulseDetailOpen=!S.pulseDetailOpen;
+    sw.classList.toggle("on", S.pulseDetailOpen);
+    detail.style.display=S.pulseDetailOpen?"block":"none";
+  });
+  body.appendChild(secMai);
+
+  /* —— 既往史 / 已做治疗 —— */
+  const secJw=document.createElement("div"); secJw.className="inq-section";
+  secJw.innerHTML='<div class="sec-label">既往史与用药</div>';
+  const jw=document.createElement("textarea"); jw.rows=2; jw.placeholder="既往疾病、长期服用的药物等（可留空）";
+  jw.style.cssText="width:100%;padding:13px 14px;border-radius:14px;border:2px solid var(--line);";
+  jw.value=S.jiwang||""; jw.addEventListener("input",()=> S.jiwang=jw.value);
+  secJw.appendChild(jw); body.appendChild(secJw);
+
+  const secZl=document.createElement("div"); secZl.className="inq-section"; secZl.style.borderBottom="none";
+  secZl.innerHTML='<div class="sec-label">已做治疗及反应</div>';
+  const zl=document.createElement("textarea"); zl.rows=2;
+  zl.placeholder="已服方药、针灸治疗及效果（如服桂枝汤两剂，汗出热退）（可留空）";
+  zl.style.cssText="width:100%;padding:13px 14px;border-radius:14px;border:2px solid var(--line);";
+  zl.value=S.zhiliao||""; zl.addEventListener("input",()=> S.zhiliao=zl.value);
+  secZl.appendChild(zl); body.appendChild(secZl);
+}
+
+// 小工具：带标签的字段行
+function fieldRow(label, makeEl){
+  const wrap=document.createElement("div"); wrap.style.marginTop="10px";
+  const l=document.createElement("div"); l.style.cssText="font-weight:600;margin-bottom:4px;color:var(--ink);"; l.textContent=label;
+  wrap.appendChild(l); wrap.appendChild(makeEl());
+  return wrap;
+}
+
+// 把一个 chip 组的「内置选中 + 自定义」合并成顿号串
+function joinChips(selArr, customArr){
+  const all=[].concat(selArr||[], customArr||[]);
+  return all.filter(Boolean).join("、");
+}
+
+function composeInquiryText(){
+  const S=inquiryState;
+  const lines=["【问诊单】"];
+
+  // 主诉
+  if(S.chiefNone) lines.push("主诉：无特定主诉（日常调理/学习咨询）");
+  else if(S.chiefText && S.chiefText.trim()) lines.push("主诉："+S.chiefText.trim());
+
+  // 病程演化（按时间叙述）
+  const evo=[];
+  if(S.visitDate) evo.push("就诊日期："+S.visitDate);
+  if(S.onsetTime && S.onsetTime.trim()) evo.push("起病："+S.onsetTime.trim());
+  if(S.onsetDesc && S.onsetDesc.trim()) evo.push("初起表现："+S.onsetDesc.trim());
+  const stages=(S.stages||[]).filter(st=>(st.time&&st.time.trim())||(st.change&&st.change.trim()));
+  if(stages.length){
+    evo.push("演变过程：");
+    stages.forEach(st=>{
+      const t=(st.time||"").trim(), c=(st.change||"").trim();
+      evo.push("  · "+(t?(t+" "):"")+c);
+    });
+  }
+  if(S.curState && S.curState.trim()) evo.push("当前状态："+S.curState.trim());
+  if(evo.length){ lines.push("\n【病程演化】"); evo.forEach(e=>lines.push(e)); }
+
+  // 通用 chip 组
+  const symLines=[];
+  INQUIRY_SCHEMA.forEach(f=>{
+    const s=joinChips(S.chips[f.id], S.custom[f.id]);
+    if(s) symLines.push(f.label+"："+s);
+  });
+  if(symLines.length){ lines.push("\n【四诊信息】"); symLines.forEach(x=>lines.push(x)); }
+
+  // 脉象
+  const maiLines=[];
+  const overall=joinChips(S.pulseOverall, S.custom["pulseOverall"]);
+  if(overall) maiLines.push("整体脉象："+overall);
+  if(S.pulseDetailOpen){
+    PULSE_POSITIONS.forEach(pos=>{
+      const s=joinChips(S.pulseDetail[pos.id], S.custom["pulse_"+pos.id]);
+      if(s) maiLines.push(pos.label+"："+s);
+    });
+  }
+  if(maiLines.length){ lines.push("\n【脉诊】"); maiLines.forEach(x=>lines.push(x)); }
+
+  // 既往 / 治疗
+  if(S.jiwang && S.jiwang.trim()) lines.push("\n既往史与用药："+S.jiwang.trim());
+  if(S.zhiliao && S.zhiliao.trim()) lines.push("已做治疗及反应："+S.zhiliao.trim());
+
+  lines.push("\n请据以上信息，按六经辨证进行问诊推演：归纳病机、判断病位、给出辨证结论与立法、推荐主方并说明方证相应，并指出还需追问以鉴别的关键点。若信息不足以定方，请明确说出还缺哪些关键信息。");
+  return lines.join("\n");
+}
+
+function openInquiry(){ buildInquiryForm(); $("#inquiryOverlay").classList.add("show"); }
+
+/* ---------- 设置页 ---------- */
+// 设置页里编辑中的 key 列表（草稿，保存时才落库）
+let settingsKeysDraft = [];
+
+function buildSettings(){
+  const s=State.settings;
+  const body=$("#settingsBody");
+  const mk=monthKey();
+  // key 草稿：深拷贝当前 keys
+  settingsKeysDraft = (s.keys||[]).map(k=>({ label:k.label||"", key:k.key||"" }));
+
+  // 按 key 维度的本月用量表
+  let keyUsageRows="";
+  const monthU = s.usage[mk]||{};
+  if(s.keys && s.keys.length){
+    s.keys.forEach((k,i)=>{
+      const ku=monthU[String(i)]||{total:0};
+      keyUsageRows+="<tr><td>"+esc(k.label||("key "+(i+1)))+"</td><td>$"+(ku.total||0).toFixed(3)+"</td><td>$"+s.monthlyLimit+"</td></tr>";
+    });
+  } else {
+    keyUsageRows='<tr><td colspan="3" style="color:var(--ink-soft);">暂无 key（演示模式）</td></tr>';
+  }
+  // 当前激活 key 的按日明细
+  const ki=s.activeKeyIndex;
+  const activeKU=(monthU[String(ki)])||{total:0,byDay:{}};
+  let dayRows="";
+  const days=Object.keys(activeKU.byDay||{}).sort();
+  if(days.length){
+    days.forEach(d=>{ const x=activeKU.byDay[d];
+      dayRows+="<tr><td>"+d.slice(5)+"</td><td>$"+x.cost.toFixed(3)+"</td><td>"+x.in+"</td><td>"+x.out+"</td></tr>"; });
+  } else { dayRows='<tr><td colspan="4" style="color:var(--ink-soft);">本月暂无用量</td></tr>'; }
+  const activeLabel = (s.keys && s.keys[ki]) ? (s.keys[ki].label||("key "+(ki+1))) : "演示模式";
+
+  body.innerHTML =
+  '<div class="field"><label>🔑 API key（可加多个，自动故障转移）</label>'+
+    '<div class="hint">从 Google AI Studio 免费申请。<b>按顺序使用：第一个额度用尽自动切到下一个</b>。可给每个 key 起名（如「妈妈的号」「我的号」）。key 只存在本机，不上传。全部留空则为演示模式。</div>'+
+    '<div id="keyList"></div>'+
+    '<button class="btn ghost small" id="addKeyBtn" style="margin-top:6px;">➕ 添加一个 key</button>'+
+    '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;">'+
+      '<button class="btn ghost small" id="testConnBtn">🔧 测试连接</button>'+
+      '<span class="hint" style="margin:0;">用第一个 key + 快速模型测试连通性（最快、不易超时）。</span>'+
+    '</div>'+
+    '<div id="testConnResult" style="margin-top:10px;"></div></div>'+
+
+  '<div class="field"><label>💰 每个 key 的本月限额（美元）</label>'+
+    '<div class="hint">单个 key 达到 80% 会提醒，达到 100% 会建议切换。每个 key 独立计算。</div>'+
+    '<input type="number" id="setLimit" min="0" step="1" value="'+s.monthlyLimit+'"></div>'+
+
+  '<div class="field"><label>🌡️ 模型温度</label>'+
+    '<div class="hint">温度越低回答越稳健严谨，越高越灵活发散。中医辨证建议偏低。勾「默认」则不指定，跟随模型自带设置。</div>'+
+    '<div class="temp-row'+(s.tempEnabled?"":" disabled")+'" id="tempRow">'+
+      '<input type="range" id="setTemp" min="0" max="2" step="0.1" value="'+(s.temperature)+'">'+
+      '<span class="temp-val" id="tempVal">'+Number(s.temperature).toFixed(1)+'</span>'+
+    '</div>'+
+    '<label class="temp-default"><input type="checkbox" id="setTempDefault"'+(s.tempEnabled?"":" checked")+'>跟随模型默认（不指定温度）</label></div>'+
+
+  '<div class="field"><label>📝 教学指令 / 模板（可编辑）</label>'+
+    '<div class="hint">可改写老师的人设与各模板的专属指令。改过的会标「已自定义」，可一键恢复默认。</div>'+
+    '<div id="tplOverrideList"></div></div>'+
+
+  '<div class="field"><label>🧠 模型字符串（高级，一般不用改）</label>'+
+    '<div class="hint">若 Google 将来改了模型名称，可在此更新。当前价格：深度 $'+CONFIG.models.pro.inPrice+'/$'+CONFIG.models.pro.outPrice+'，快速 $'+CONFIG.models.flash.inPrice+'/$'+CONFIG.models.flash.outPrice+'（输入/输出每百万 token）。</div>'+
+    '<label style="font-weight:600;margin-top:8px;">深度模式（Pro）：</label>'+
+    '<input type="text" id="setModelPro" value="'+esc(s.modelPro)+'" style="margin-bottom:10px;">'+
+    '<label style="font-weight:600;">快速模式（Flash）：</label>'+
+    '<input type="text" id="setModelFlash" value="'+esc(s.modelFlash)+'"></div>'+
+
+  '<div class="field"><label>🔠 字体大小</label>'+
+    '<div class="font-choose" id="fontChoose">'+
+      ['标准','大','特大'].map(f=>'<button class="chip'+(s.fontSize===f?' on':'')+'" data-fs="'+f+'">'+f+'</button>').join('')+
+    '</div></div>'+
+
+  '<div class="field"><label>💾 数据备份</label>'+
+    '<div class="hint">导出会把所有对话和设置存成一个文件，可在换设备时导入恢复。</div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;">'+
+      '<button class="btn ghost" id="exportData">⬇️ 导出备份（JSON）</button>'+
+      '<button class="btn ghost" id="importData">⬆️ 导入备份</button>'+
+      '<input type="file" id="importFile" accept="application/json,.json" style="display:none;">'+
+    '</div></div>'+
+
+  '<div class="field"><label>📊 各 key 本月用量（'+mk+'）</label>'+
+    '<table class="usage-table"><thead><tr><th>key</th><th>本月已用</th><th>限额</th></tr></thead>'+
+    '<tbody>'+keyUsageRows+'</tbody></table></div>'+
+
+  '<div class="field"><label>📊 当前激活 key 按日明细（'+esc(activeLabel)+'）</label>'+
+    '<table class="usage-table"><thead><tr><th>日期</th><th>花费</th><th>输入token</th><th>输出token</th></tr></thead>'+
+    '<tbody>'+dayRows+'</tbody></table></div>';
+
+  renderKeyListEditor();
+  renderTplOverrideEditor();
+
+  // 温度滑块
+  const tempRange=$("#setTemp"), tempVal=$("#tempVal"), tempDef=$("#setTempDefault"), tempRow=$("#tempRow");
+  tempRange.addEventListener("input", ()=>{ tempVal.textContent=Number(tempRange.value).toFixed(1); });
+  tempDef.addEventListener("change", ()=>{ tempRow.classList.toggle("disabled", tempDef.checked); });
+
+  // 字体选择即时
+  $$("#fontChoose .chip").forEach(b=> b.addEventListener("click", ()=>{
+    $$("#fontChoose .chip").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+    document.documentElement.setAttribute("data-fontsize", b.dataset.fs);
+  }));
+  // 备份导出/导入
+  $("#exportData").addEventListener("click", exportBackup);
+  $("#importData").addEventListener("click", ()=> $("#importFile").click());
+  $("#importFile").addEventListener("change", (e)=> importBackup(e.target.files[0]));
+  // 添加 key
+  $("#addKeyBtn").addEventListener("click", ()=>{
+    syncKeyDraftFromDOM();
+    settingsKeysDraft.push({ label:"key "+(settingsKeysDraft.length+1), key:"" });
+    renderKeyListEditor();
+  });
+  // 测试连接（用第一个 key + 快速模型，测 key 与网络连通性）
+  $("#testConnBtn").addEventListener("click", async ()=>{
+    const btn=$("#testConnBtn"), out=$("#testConnResult");
+    const keys=collectKeysFromForm();
+    const key=keys.length ? keys[0].key : "";
+    const model=$("#setModelFlash").value.trim() || CONFIG.models.flash.id;
+    btn.disabled=true; const old=btn.textContent; btn.textContent="测试中…";
+    out.innerHTML='<span style="color:var(--ink-soft);">正在用快速模型「'+esc(model)+'」测试连通性…</span>';
+    try{
+      const res=await API.testConnection(key, model);
+      const info=res.info;
+      const color=res.ok?"var(--primary)":"var(--danger)";
+      let html='<div style="color:'+color+';font-weight:700;">'+(res.ok?"✅ ":"⚠️ ")+esc(info.main)+'</div>';
+      if(info.detail) html+='<div style="color:var(--ink-soft);font-size:var(--fs-sm);margin-top:4px;word-break:break-all;">'+esc(info.detail)+'</div>';
+      out.innerHTML=html;
+    }catch(e){
+      out.innerHTML='<div style="color:var(--danger);">测试出错：'+esc((e&&e.message)||"未知")+'</div>';
+    }finally{ btn.disabled=false; btn.textContent=old; }
+  });
+}
+
+/* ---------- 多 key 列表编辑器 ---------- */
+// 渲染 key 草稿列表（每行：序号 / 标签 / key / 上移 / 下移 / 删除）
+function renderKeyListEditor(){
+  const box=$("#keyList"); if(!box) return;
+  box.innerHTML="";
+  if(!settingsKeysDraft.length){
+    box.innerHTML='<div class="hint" style="margin:6px 0;">还没有 key（当前为演示模式）。点下面「添加一个 key」开始。</div>';
+    return;
+  }
+  settingsKeysDraft.forEach((k,i)=>{
+    const row=document.createElement("div"); row.className="key-row"; row.dataset.i=i;
+    row.innerHTML=
+      '<span class="k-idx">'+(i+1)+'</span>'+
+      '<input class="k-label" type="text" placeholder="标签（如 妈妈的号）" value="'+esc(k.label||"")+'">'+
+      '<input class="k-key" type="password" placeholder="粘贴 Gemini API key" value="'+esc(k.key||"")+'">'+
+      '<button class="k-btn up" title="上移">↑</button>'+
+      '<button class="k-btn down" title="下移">↓</button>'+
+      '<button class="k-btn del" title="删除">🗑</button>';
+    row.querySelector(".up").addEventListener("click",()=>{ syncKeyDraftFromDOM(); if(i>0){ const t=settingsKeysDraft[i-1]; settingsKeysDraft[i-1]=settingsKeysDraft[i]; settingsKeysDraft[i]=t; } renderKeyListEditor(); });
+    row.querySelector(".down").addEventListener("click",()=>{ syncKeyDraftFromDOM(); if(i<settingsKeysDraft.length-1){ const t=settingsKeysDraft[i+1]; settingsKeysDraft[i+1]=settingsKeysDraft[i]; settingsKeysDraft[i]=t; } renderKeyListEditor(); });
+    row.querySelector(".del").addEventListener("click",()=>{ syncKeyDraftFromDOM(); settingsKeysDraft.splice(i,1); renderKeyListEditor(); });
+    box.appendChild(row);
+  });
+}
+// 把 DOM 里各输入框的值同步回草稿（排序/删除前先 sync，避免丢失编辑）
+function syncKeyDraftFromDOM(){
+  const rows=$$("#keyList .key-row");
+  rows.forEach(row=>{
+    const i=parseInt(row.dataset.i,10);
+    if(settingsKeysDraft[i]){
+      settingsKeysDraft[i].label = row.querySelector(".k-label").value.trim();
+      settingsKeysDraft[i].key   = row.querySelector(".k-key").value.trim();
+    }
+  });
+}
+// 收集表单里有效的 key（去掉空 key），用于测试连接与保存
+function collectKeysFromForm(){
+  syncKeyDraftFromDOM();
+  return settingsKeysDraft
+    .map((k,i)=>({ label:(k.label||"").trim() || ("key "+(i+1)), key:(k.key||"").trim() }))
+    .filter(k=>k.key);
+}
+
+/* ---------- 模板/人设覆盖编辑器 ---------- */
+function renderTplOverrideEditor(){
+  const box=$("#tplOverrideList"); if(!box) return;
+  box.innerHTML="";
+  const ov=State.settings.tplOverrides||{};
+  // 自由对话默认人设 + 各模板
+  const items=[{ key:"__default__", icon:"💬", name:"自由对话（默认人设）" }]
+    .concat(TEMPLATES.map(t=>({ key:t.key, icon:t.icon, name:t.name })));
+  items.forEach(it=>{
+    const customized = !!(ov[it.key] && ov[it.key].trim());
+    const row=document.createElement("div");
+    row.style.cssText="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap;";
+    row.innerHTML='<span style="flex:1;font-weight:600;">'+it.icon+' '+esc(it.name)+(customized?'<span class="tpl-custom-badge">已自定义</span>':'')+'</span>'+
+      '<button class="btn ghost small" data-edit>✏️ 编辑</button>'+
+      (customized?'<button class="btn ghost small" data-reset>↩ 恢复默认</button>':'');
+    row.querySelector("[data-edit]").addEventListener("click",()=> openTplEditor(it.key, it.name));
+    const rb=row.querySelector("[data-reset]");
+    if(rb) rb.addEventListener("click", async ()=>{
+      const ok=await confirmDialog("恢复默认","确定把「"+it.name+"」的指令恢复成默认吗？你的自定义内容会被清除。");
+      if(!ok) return;
+      delete State.settings.tplOverrides[it.key];
+      await DB.setSetting("tplOverrides", State.settings.tplOverrides);
+      renderTplOverrideEditor();
+      toast("已恢复默认");
+    });
+    box.appendChild(row);
+  });
+}
+
+// 打开模板/人设指令编辑器
+function openTplEditor(tplKey, name){
+  const defText = tplKey==="__default__" ? DEFAULT_SYSTEM : (TEMPLATES.find(t=>t.key===tplKey)||{}).system||"";
+  const ov=State.settings.tplOverrides||{};
+  const cur = (ov[tplKey] && ov[tplKey].trim()) ? ov[tplKey] : defText;
+  $("#tplEditTitle").textContent="编辑指令 · "+name;
+  const ta=$("#tplEditTa"); ta.value=cur;
+  const saveBtn=$("#tplEditSave"), resetBtn=$("#tplEditReset");
+  saveBtn.onclick = async ()=>{
+    const val=ta.value.trim();
+    if(!val){ toast("指令不能为空"); return; }
+    // 与默认一致则视为未自定义（不存覆盖）
+    if(val===defText.trim()){ delete State.settings.tplOverrides[tplKey]; }
+    else { State.settings.tplOverrides[tplKey]=val; }
+    await DB.setSetting("tplOverrides", State.settings.tplOverrides);
+    $("#tplEditOverlay").classList.remove("show");
+    renderTplOverrideEditor();
+    toast("已保存");
+  };
+  resetBtn.onclick = ()=>{ ta.value=defText; };
+  $("#tplEditOverlay").classList.add("show");
+}
+
+async function saveSettingsFromForm(){
+  const s=State.settings;
+  // 多 key
+  const keys=collectKeysFromForm();
+  s.keys=keys;
+  if(typeof s.activeKeyIndex!=="number" || s.activeKeyIndex>=keys.length || s.activeKeyIndex<0) s.activeKeyIndex=0;
+  s.monthlyLimit = Math.max(0, parseFloat($("#setLimit").value)||CONFIG.defaultMonthlyLimit);
+  s.modelPro = $("#setModelPro").value.trim() || CONFIG.models.pro.id;
+  s.modelFlash = $("#setModelFlash").value.trim() || CONFIG.models.flash.id;
+  const fsOn = $("#fontChoose .chip.on"); s.fontSize = fsOn?fsOn.dataset.fs:s.fontSize;
+  // 温度
+  s.tempEnabled = !$("#setTempDefault").checked;
+  const tv=parseFloat($("#setTemp").value); s.temperature = (isNaN(tv)?0.7:Math.max(0,Math.min(2,tv)));
+  await DB.setSetting("keys", s.keys);
+  await DB.setSetting("activeKeyIndex", s.activeKeyIndex);
+  await DB.setSetting("monthlyLimit", s.monthlyLimit);
+  await DB.setSetting("modelPro", s.modelPro);
+  await DB.setSetting("modelFlash", s.modelFlash);
+  await DB.setSetting("fontSize", s.fontSize);
+  await DB.setSetting("temperature", s.temperature);
+  await DB.setSetting("tempEnabled", s.tempEnabled);
+  // 同步旧 apiKey 字段（向后兼容：存第一个 key，便于旧逻辑/备份）
+  await DB.setSetting("apiKey", keys.length ? keys[0].key : "");
+  document.documentElement.setAttribute("data-fontsize", s.fontSize);
+  renderQuota();
+  $("#settingsOverlay").classList.remove("show");
+  toast("设置已保存");
+  // 演示模式状态可能变化，刷新空状态
+  if(!State.currentSessionId || computePath().length===0) renderStream();
+}
+
+async function exportBackup(){
+  const data = await DB.exportAll();
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url;
+  a.download="中医助手备份-"+dayKey()+".json"; a.click();
+  URL.revokeObjectURL(url);
+  toast("备份已导出");
+}
+async function importBackup(file){
+  if(!file) return;
+  const ok = await confirmDialog("导入备份", "导入会把备份里的对话和设置合并进来，确定继续吗？");
+  if(!ok) return;
+  try{
+    const text = await file.text();
+    const data = JSON.parse(text);
+    await DB.importAll(data);
+    await loadSettings(); await refreshSessions();
+    if(State.sessions.length) await openSession(State.sessions[0].id);
+    renderQuota();
+    $("#settingsOverlay").classList.remove("show");
+    toast("备份导入成功");
+  }catch(e){ alertDialog("导入失败", "文件读取或格式有误："+(e.message||"")); }
+}
+
+/* ---------- 导出/打印当前对话 ---------- */
+function currentConvForExport(){
+  const sess = State.sessions.find(s=>s.id===State.currentSessionId);
+  const path = computePath();
+  return { title: sess?sess.title:"对话", path };
+}
+function exportTxt(){
+  const {title,path}=currentConvForExport();
+  let out = title+"\n"+"=".repeat(24)+"\n\n";
+  path.forEach(m=>{
+    const imgMark = (Array.isArray(m.images)&&m.images.length) ? ("[图片"+(m.images.length>1?("×"+m.images.length):"")+"]\n") : "";
+    out += (m.role==="user"?"● 提问":"■ 老师")+"  ["+fmtTime(m.timestamp)+"]\n"+imgMark+m.content+"\n\n";
+  });
+  const blob=new Blob([out],{type:"text/plain;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=title.slice(0,20)+".txt"; a.click();
+  URL.revokeObjectURL(url); toast("已下载 txt");
+}
+async function copyAll(){
+  const {title,path}=currentConvForExport();
+  let out=title+"\n\n";
+  path.forEach(m=>{
+    const imgMark = (Array.isArray(m.images)&&m.images.length) ? ("[图片"+(m.images.length>1?("×"+m.images.length):"")+"]\n") : "";
+    out+=(m.role==="user"?"【提问】":"【老师】")+"\n"+imgMark+m.content+"\n\n";
+  });
+  try{ await navigator.clipboard.writeText(out); toast("已复制全文"); }
+  catch(e){
+    // 兜底
+    const ta=document.createElement("textarea"); ta.value=out; document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy"); ta.remove(); toast("已复制全文");
+  }
+}
+function printConv(){
+  const {title,path}=currentConvForExport();
+  const w=window.open("","_print");
+  if(!w){ toast("浏览器拦截了打印窗口，请允许弹出窗口"); return; }
+  let rows="";
+  let lastDayKey=null;
+  path.forEach(m=>{
+    const dk = dayKey(new Date(m.timestamp));
+    if(dk!==lastDayKey){
+      const d=new Date(m.timestamp);
+      rows += '<div class="dsep">'+d.getFullYear()+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日"+'</div>';
+      lastDayKey=dk;
+    }
+    const icon=m.role==="user"?"●":"■";  // 用户=圆点，AI=方块
+    const who=m.role==="user"?"提问":"老师";
+    let imgsHtml="";
+    if(Array.isArray(m.images)&&m.images.length){
+      imgsHtml='<div class="imgs">'+m.images.map(im=>'<img src="data:'+(im.mimeType||"image/jpeg")+';base64,'+(im.dataB64||"")+'">').join("")+'</div>';
+    }
+    const content = m.role==="user"? esc(m.content).replace(/\n/g,"<br>") : mdToHtml(m.content);
+    rows += '<div class="qa '+m.role+'"><div class="who">'+icon+' '+who+' <span class="t">'+fmtHM(m.timestamp)+'</span></div><div class="c">'+imgsHtml+content+'</div></div>';
+  });
+  w.document.write(
+  '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>'+esc(title)+'</title><style>'+
+  '@page{size:A4;margin:18mm;} body{font-family:"Songti SC","SimSun",serif;color:#222;line-height:1.8;font-size:14px;}'+
+  'h1{text-align:center;color:#3a5a40;border-bottom:2px solid #3a5a40;padding-bottom:10px;}'+
+  '.dsep{text-align:center;color:#9c6644;font-weight:bold;margin:18px 0 8px;font-size:13px;}'+
+  '.qa{margin:14px 0;page-break-inside:avoid;} .who{font-weight:bold;color:#3a5a40;margin-bottom:4px;} .t{font-weight:normal;color:#888;font-size:12px;margin-left:8px;}'+
+  '.c{padding:8px 14px;border-radius:8px;} .user .c{background:#eef3ea;} .ai .c{background:#f7f3ea;}'+
+  'table{border-collapse:collapse;width:100%;} th,td{border:1px solid #ccc;padding:4px 8px;} blockquote{border-left:3px solid #9c6644;margin:8px 0;padding:4px 12px;color:#555;}'+
+  'code{background:#eee;padding:1px 4px;border-radius:4px;} pre{background:#f0f0f0;padding:8px;border-radius:6px;overflow-x:auto;}'+
+  '.imgs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;} .imgs img{max-width:200px;max-height:200px;border:1px solid #ccc;border-radius:6px;}'+
+  '</style></head><body><h1>'+esc(title)+'</h1>'+rows+
+  '<script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script></body></html>');
+  w.document.close();
+}
+
+/* ---------- 通用对话框（确认/输入/提示） ---------- */
+function confirmDialog(title, msg){
+  return new Promise(res=>{
+    $("#confirmTitle").textContent=title; $("#confirmMsg").textContent=msg;
+    const ov=$("#confirmOverlay"); ov.classList.add("show");
+    const yes=$("#confirmYes"), no=$("#confirmNo");
+    const cleanup=()=>{ ov.classList.remove("show"); yes.onclick=null; no.onclick=null; };
+    yes.onclick=()=>{ cleanup(); res(true); };
+    no.onclick=()=>{ cleanup(); res(false); };
+  });
+}
+function alertDialog(title, msg){
+  return new Promise(res=>{
+    $("#confirmTitle").textContent=title; $("#confirmMsg").textContent=msg;
+    const ov=$("#confirmOverlay"); ov.classList.add("show");
+    const yes=$("#confirmYes"), no=$("#confirmNo");
+    no.style.display="none"; yes.textContent="知道了"; yes.classList.remove("danger");
+    const cleanup=()=>{ ov.classList.remove("show"); no.style.display=""; yes.textContent="确定"; yes.classList.add("danger"); yes.onclick=null; };
+    yes.onclick=()=>{ cleanup(); res(true); };
+  });
+}
+function promptDialog(title, def){
+  return new Promise(res=>{
+    $("#promptTitle").textContent=title;
+    const inp=$("#promptInput"); inp.value=def||"";
+    const ov=$("#promptOverlay"); ov.classList.add("show");
+    setTimeout(()=>{ inp.focus(); inp.select(); },50);
+    const yes=$("#promptYes"), no=$("#promptNo");
+    const cleanup=()=>{ ov.classList.remove("show"); yes.onclick=null; no.onclick=null; inp.onkeydown=null; };
+    yes.onclick=()=>{ const v=inp.value; cleanup(); res(v); };
+    no.onclick=()=>{ cleanup(); res(null); };
+    inp.onkeydown=(e)=>{ if(e.key==="Enter"){ const v=inp.value; cleanup(); res(v); } };
+  });
+}
+
+/* ---------- 杂项 UI ---------- */
+function setSending(on){
+  $("#sendBtn").disabled=on;
+  $("#sendBtn").textContent = on ? "…" : "发送";
+}
+function autoGrow(el){ el.style.height="auto"; el.style.height=Math.min(el.scrollHeight,200)+"px"; }
+function toggleSidebar(){
+  $("#sidebar").classList.toggle("collapsed");
+  $("#backdrop").classList.toggle("show", !$("#sidebar").classList.contains("collapsed") && window.innerWidth<=820);
+}
+function closeSidebarOnMobile(){
+  if(window.innerWidth<=820){ $("#sidebar").classList.add("collapsed"); $("#backdrop").classList.remove("show"); }
+}
+
+/* ---------- 模型切换 ---------- */
+function setTier(tier){
+  State.tier=tier;
+  $$("#modelSwitch .opt").forEach(o=> o.classList.toggle("on", o.dataset.tier===tier));
+}
+
+/* ---------- 事件绑定 ---------- */
+function wireEvents(){
+  // 侧边栏
+  $("#menuBtn").addEventListener("click", toggleSidebar);
+  $("#backdrop").addEventListener("click", ()=>{ $("#sidebar").classList.add("collapsed"); $("#backdrop").classList.remove("show"); });
+  $("#newChatBtn").addEventListener("click", createSession);
+  $("#settingsBtn").addEventListener("click", ()=>{ buildSettings(); $("#settingsOverlay").classList.add("show"); });
+
+  // 模型切换
+  $$("#modelSwitch .opt").forEach(o=> o.addEventListener("click", ()=> setTier(o.dataset.tier)));
+
+  // 发送
+  const box=$("#inputBox");
+  box.addEventListener("input", ()=> autoGrow(box));
+  box.addEventListener("keydown", (e)=>{
+    // 桌面：Enter 发送，Shift+Enter 换行；平板软键盘通常用发送键，这里只在非 IME 下处理
+    if(e.key==="Enter" && !e.shiftKey && !e.isComposing && window.innerWidth>820){
+      e.preventDefault(); doSend();
+    }
+  });
+  $("#sendBtn").addEventListener("click", doSend);
+
+  // 图片上传
+  $("#imgBtn").addEventListener("click", ()=> $("#imgInput").click());
+  $("#imgInput").addEventListener("change", async (e)=>{
+    await handleImageFiles(e.target.files);
+    e.target.value=""; // 允许重复选同一张
+  });
+  // lightbox 关闭
+  $("#lightbox").addEventListener("click", (e)=>{ if(e.target.id==="lightbox"||e.target.classList.contains("lb-x")) $("#lightbox").classList.remove("show"); });
+
+  // 问诊单
+  $("#inquiryBtn").addEventListener("click", async ()=>{ if(!State.currentSessionId) await createSession(); openInquiry(); });
+  $("#genInquiry").addEventListener("click", ()=>{
+    const txt=composeInquiryText();
+    $("#inputBox").value = txt; autoGrow($("#inputBox"));
+    $("#inquiryOverlay").classList.remove("show");
+    // 若当前会话没选模板，自动套用「问诊推演」
+    const sess=State.sessions.find(s=>s.id===State.currentSessionId);
+    if(sess && !sess.templateKey) setActiveTemplate("wenzhen", true);
+    $("#inputBox").focus();
+    toast("问诊单已填入输入框，可再修改后发送");
+  });
+
+  // 导出菜单
+  $("#exportBtn").addEventListener("click", ()=>{
+    if(!State.currentSessionId || computePath().length===0){ toast("当前没有可导出的对话"); return; }
+    $("#exportOverlay").classList.add("show");
+  });
+  $("#doPrint").addEventListener("click", ()=>{ $("#exportOverlay").classList.remove("show"); printConv(); });
+  $("#doCopy").addEventListener("click", ()=>{ $("#exportOverlay").classList.remove("show"); copyAll(); });
+  $("#doTxt").addEventListener("click", ()=>{ $("#exportOverlay").classList.remove("show"); exportTxt(); });
+
+  // 设置保存
+  $("#saveSettings").addEventListener("click", saveSettingsFromForm);
+
+  // 侧边栏 tab 切换（💬 对话 / 📂 医案）
+  $$("#sidebar .sb-tab").forEach(b=> b.addEventListener("click", ()=> switchSbTab(b.dataset.tab)));
+  // 新建患者
+  $("#newPatientBtn").addEventListener("click", ()=> openPatientEdit(null));
+  // 存入医案
+  $("#saveCaseBtn").addEventListener("click", openSaveCase);
+  $("#saveCaseConfirm").addEventListener("click", confirmSaveCase);
+
+  // 快速导航开合
+  $("#qnToggle").addEventListener("click", ()=> $("#quickNav").classList.toggle("hidden"));
+
+  // 通用关闭按钮
+  $$("[data-close]").forEach(b=> b.addEventListener("click", ()=> b.closest(".overlay").classList.remove("show")));
+  // 点遮罩关闭（仅这些非确认类弹层）
+  ["exportOverlay","inquiryOverlay","settingsOverlay","tplCardOverlay","tplEditOverlay"].forEach(id=>{
+    $("#"+id).addEventListener("click",(e)=>{ if(e.target.id===id) e.currentTarget.classList.remove("show"); });
+  });
+  // 点空白处关闭「更多」模板弹层
+  document.addEventListener("click",(e)=>{
+    const pop=$("#tplMorePop");
+    if(pop && pop.classList.contains("show") && !e.target.closest(".tpl-more-wrap")) pop.classList.remove("show");
+  });
+
+  window.addEventListener("resize", ()=>{ updateQuickNav(computePath()); });
+}
+
+function doSend(){
+  const box=$("#inputBox");
+  const text=box.value;
+  if(!text.trim()) return;
+  // edit fork：若标记了 editParent，则发送到该父节点
+  let opts={};
+  if(box.dataset.editParent){
+    opts.parentId = box.dataset.editParent==="ROOT" ? null : box.dataset.editParent;
+    delete box.dataset.editParent;
+  }
+  box.value=""; autoGrow(box);
+  sendMessage(text, opts);
+}
+
+/* ---------- PWA：内联 manifest + service worker ---------- */
+function setupPWA(){
+  // 仅在 http(s) 下注入 PWA；file:// 协议下 manifest/blob 会在 DevTools 报错，直接跳过
+  if(!location.protocol.startsWith("http")) return;
+  try{
+    const manifest = {
+      name:"中医学习助手", short_name:"中医助手", lang:"zh-CN",
+      start_url:".", display:"standalone", orientation:"any",
+      background_color:"#f5f0e6", theme_color:"#3a5a40",
+      icons:[{
+        // 内联 SVG 图标（绿底 + 草字），data URI
+        src:"data:image/svg+xml;base64,"+btoa(unescape(encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" rx="96" fill="#3a5a40"/><text x="256" y="340" font-size="300" text-anchor="middle" fill="#f5f0e6" font-family="serif">医</text></svg>'
+        ))),
+        sizes:"512x512", type:"image/svg+xml", purpose:"any"
+      }]
+    };
+    const mBlob=new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
+    const link=document.createElement("link"); link.rel="manifest"; link.href=URL.createObjectURL(mBlob);
+    document.head.appendChild(link);
+
+    // 简单 service worker（缓存当前页，离线可打开壳）。file:// 下不支持，忽略错误。
+    if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+      const swCode = [
+        'const C="tcm-cache-v1";',
+        'self.addEventListener("install", e=> self.skipWaiting());',
+        'self.addEventListener("activate", e=> self.clients.claim());',
+        'self.addEventListener("fetch", e=>{',
+        '  const u=new URL(e.request.url);',
+        '  if(u.origin===location.origin && e.request.method==="GET"){',
+        '    e.respondWith(',
+        '      caches.open(C).then(function(c){',
+        '        return c.match(e.request).then(function(r){',
+        '          return r || fetch(e.request).then(function(resp){ c.put(e.request, resp.clone()); return resp; }).catch(function(){ return caches.match("./"); });',
+        '        });',
+        '      })',
+        '    );',
+        '  }',
+        '});'
+      ].join("\n");
+      const swUrl=URL.createObjectURL(new Blob([swCode],{type:"text/javascript"}));
+      navigator.serviceWorker.register(swUrl).catch(function(){ /* 忽略 */ });
+    }
+  }catch(e){ /* PWA 失败不影响主功能 */ }
+}
+
+/* ==================== ⑥ 医案系统（患者档案 / 复诊 / 存入医案） ====================
+   patient 记录：{id, name, gender, birthYear, ageText, constitution, taboos,
+                 visits:[{id, date, summary, createdAt}], createdAt, updatedAt}
+   visits 按 date+createdAt 排序，详情视图倒序展示。
+================================================================ */
+
+/* ---------- 侧边栏 tab 切换 ---------- */
+function switchSbTab(tab){
+  State.sbTab = tab;
+  $$("#sidebar .sb-tab").forEach(b=> b.classList.toggle("active", b.dataset.tab===tab));
+  $("#tabChat").style.display    = tab==="chat" ? "flex" : "none";
+  $("#tabPatient").style.display = tab==="patient" ? "flex" : "none";
+  if(tab==="patient") renderPatientList();
+}
+
+/* ---------- 患者数据加载 / 列表 ---------- */
+async function refreshPatients(){
+  State.patients = await DB.allPatients();
+  if(State.sbTab==="patient") renderPatientList();
+}
+// 取某患者最近一次就诊日期（已排序后最后一条）
+function lastVisitDate(pat){
+  const vs = (pat.visits||[]);
+  if(!vs.length) return "尚无就诊";
+  const sorted = vs.slice().sort((a,b)=> (a.date||"").localeCompare(b.date||"") || (a.createdAt||0)-(b.createdAt||0));
+  return (sorted[sorted.length-1].date) || "日期未记录";
+}
+function renderPatientList(){
+  const box=$("#patientList"); if(!box) return; box.innerHTML="";
+  if(!State.patients.length){
+    box.innerHTML='<div style="padding:20px;color:var(--ink-soft);text-align:center;">还没有患者档案<br>点上面的「新建患者」开始建档</div>';
+    return;
+  }
+  State.patients.forEach(p=>{
+    const div=document.createElement("div");
+    div.className="pat-item"+(p.id===State.viewingPatientId?" active":"");
+    div.innerHTML=
+      '<div class="title">'+esc(p.name||"未命名")+'</div>'+
+      '<div class="meta"><span>最近：'+esc(lastVisitDate(p))+'</span>'+
+      '<span>'+((p.visits||[]).length)+' 次就诊</span></div>';
+    div.addEventListener("click", ()=> openPatientDetail(p.id));
+    box.appendChild(div);
+  });
+}
+
+/* ---------- 新建 / 编辑 患者资料 ---------- */
+// patientId 为空 = 新建；onSaved 回调（可选）传入保存后的患者对象
+function openPatientEdit(patientId, onSaved){
+  const editing = patientId ? State.patients.find(p=>p.id===patientId) : null;
+  $("#patientEditTitle").textContent = editing ? "编辑患者资料" : "新建患者";
+  const p = editing || {};
+  const body=$("#patientEditBody");
+  body.innerHTML=
+    '<div class="field"><label>称呼 *</label>'+
+      '<input type="text" id="peName" placeholder="如：王阿姨 / 张先生" value="'+esc(p.name||"")+'"></div>'+
+    '<div class="field"><label>性别</label>'+
+      '<div class="chip-group" id="peGender">'+
+        ['男','女','其他'].map(g=>'<button class="chip'+(p.gender===g?' on':'')+'" data-g="'+g+'">'+g+'</button>').join('')+
+      '</div></div>'+
+    '<div class="field"><label>出生年份（用于自动算年龄，可留空）</label>'+
+      '<input type="number" id="peBirth" min="1900" max="'+(new Date().getFullYear())+'" placeholder="如 1965" value="'+(p.birthYear||"")+'"></div>'+
+    '<div class="field"><label>年龄描述（若不填出生年份，可在此手写）</label>'+
+      '<input type="text" id="peAge" placeholder="如 约六十岁" value="'+esc(p.ageText||"")+'"></div>'+
+    '<div class="field"><label>体质 / 基础情况</label>'+
+      '<textarea id="peCons" rows="2" placeholder="如：素体阳虚，易疲劳，有慢性胃病">'+esc(p.constitution||"")+'</textarea></div>'+
+    '<div class="field"><label>禁忌 / 慎用</label>'+
+      '<textarea id="peTaboo" rows="2" placeholder="如：孕妇 / 对某药过敏 / 忌寒凉">'+esc(p.taboos||"")+'</textarea></div>';
+  // 性别 chip 单选
+  $$("#peGender .chip").forEach(b=> b.addEventListener("click", ()=>{
+    const wasOn=b.classList.contains("on");
+    $$("#peGender .chip").forEach(x=>x.classList.remove("on"));
+    if(!wasOn) b.classList.add("on");
+  }));
+  const saveBtn=$("#patientEditSave");
+  saveBtn.onclick = async ()=>{
+    const name=$("#peName").value.trim();
+    if(!name){ toast("请至少填写称呼"); return; }
+    const genderOn=$("#peGender .chip.on");
+    const birthRaw=parseInt($("#peBirth").value,10);
+    const rec = editing || { id:uid(), visits:[], createdAt:Date.now() };
+    rec.name=name;
+    rec.gender = genderOn ? genderOn.dataset.g : "";
+    rec.birthYear = (birthRaw && birthRaw>1900 && birthRaw<=new Date().getFullYear()) ? birthRaw : null;
+    rec.ageText = $("#peAge").value.trim();
+    rec.constitution = $("#peCons").value.trim();
+    rec.taboos = $("#peTaboo").value.trim();
+    rec.updatedAt = Date.now();
+    if(!Array.isArray(rec.visits)) rec.visits=[];
+    await DB.putPatient(rec);
+    await refreshPatients();
+    $("#patientEditOverlay").classList.remove("show");
+    toast(editing ? "资料已更新" : "患者已建档");
+    if(onSaved) onSaved(rec);
+    // 若详情面板正开着这位患者，刷新
+    if(State.viewingPatientId===rec.id) openPatientDetail(rec.id);
+  };
+  $("#patientEditOverlay").classList.add("show");
+}
+
+/* ---------- 患者详情视图（基本信息 + 就诊时间线） ---------- */
+async function openPatientDetail(patientId){
+  let pat = State.patients.find(p=>p.id===patientId);
+  if(!pat){ pat = await DB.getPatient(patientId); }
+  if(!pat){ toast("找不到该患者"); return; }
+  State.viewingPatientId = pat.id;
+  renderPatientList();
+  $("#patientTitle").textContent = "📂 "+(pat.name||"患者档案");
+  const body=$("#patientBody");
+  // 基本信息
+  let html='<div class="pat-info-grid" style="display:block;margin-bottom:20px;">'+
+    '<div style="line-height:2;">'+
+      '<div><strong style="color:var(--primary);">性别：</strong>'+esc(pat.gender||"未记录")+'</div>'+
+      '<div><strong style="color:var(--primary);">年龄：</strong>'+
+        esc(pat.birthYear ? ((new Date().getFullYear()-pat.birthYear)+"岁（"+pat.birthYear+"年生）") : (pat.ageText||"未记录"))+'</div>'+
+      '<div><strong style="color:var(--primary);">体质/基础：</strong>'+esc(pat.constitution||"未记录")+'</div>'+
+      '<div><strong style="color:var(--primary);">禁忌/慎用：</strong>'+esc(pat.taboos||"未记录")+'</div>'+
+    '</div></div>';
+  // 就诊时间线（倒序）
+  const visits=(pat.visits||[]).slice().sort((a,b)=>
+    (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0));
+  html+='<div style="font-weight:700;color:var(--primary);font-size:var(--fs-lg);margin-bottom:10px;">就诊记录（'+visits.length+' 次）</div>';
+  if(!visits.length){
+    html+='<div style="color:var(--ink-soft);padding:10px 0;">暂无就诊记录。点下方「开始复诊」可建立新会话，对话后用顶栏「📥 存入医案」归档。</div>';
+  } else {
+    visits.forEach(v=>{
+      html+='<div class="visit-card" data-vid="'+v.id+'">'+
+        '<div class="vc-head"><span class="vc-date">'+esc(v.date||"日期未记录")+'</span><span style="color:var(--ink-soft);">▾ 展开/收起</span></div>'+
+        '<div class="vc-body"><div class="vc-text">'+esc(v.summary||"（无摘要）")+'</div>'+
+          '<div class="vc-acts">'+
+            '<button class="btn ghost small" data-vact="edit">✏️ 编辑</button>'+
+            '<button class="btn danger small" data-vact="del">🗑 删除</button>'+
+          '</div></div>'+
+      '</div>';
+    });
+  }
+  body.innerHTML=html;
+  // 就诊卡展开/收起 + 编辑/删除
+  $$("#patientBody .visit-card").forEach(card=>{
+    const vid=card.dataset.vid;
+    card.querySelector(".vc-head").addEventListener("click", ()=> card.classList.toggle("open"));
+    const eb=card.querySelector('[data-vact="edit"]');
+    const db=card.querySelector('[data-vact="del"]');
+    if(eb) eb.addEventListener("click",(e)=>{ e.stopPropagation(); openVisitEdit(pat.id, vid); });
+    if(db) db.addEventListener("click", async (e)=>{
+      e.stopPropagation();
+      const ok=await confirmDialog("删除就诊记录","确定删除这条就诊记录吗？删除后无法恢复。");
+      if(!ok) return;
+      pat.visits=(pat.visits||[]).filter(x=>x.id!==vid);
+      pat.updatedAt=Date.now();
+      await DB.putPatient(pat); await refreshPatients();
+      openPatientDetail(pat.id);
+      toast("已删除");
+    });
+  });
+  // 底部操作按钮
+  $("#patientFoot").innerHTML=
+    '<button class="btn ghost" id="pdEdit">✏️ 编辑资料</button>'+
+    '<button class="btn ghost" id="pdPrint">🖨 打印医案</button>'+
+    '<button class="btn" id="pdRevisit">🩺 开始复诊</button>';
+  $("#pdEdit").onclick = ()=> openPatientEdit(pat.id);
+  $("#pdPrint").onclick = ()=> printPatientCase(pat.id);
+  $("#pdRevisit").onclick = ()=> startRevisit(pat.id);
+  $("#patientOverlay").classList.add("show");
+}
+
+/* ---------- 编辑单条就诊记录 ---------- */
+function openVisitEdit(patientId, visitId){
+  const pat=State.patients.find(p=>p.id===patientId); if(!pat) return;
+  const v=(pat.visits||[]).find(x=>x.id===visitId); if(!v) return;
+  $("#visitEditTitle").textContent="编辑就诊记录";
+  $("#visitEditBody").innerHTML=
+    '<div class="field"><label>就诊日期</label>'+
+      '<input type="date" id="veDate" value="'+esc(v.date||"")+'"></div>'+
+    '<div class="field"><label>就诊摘要</label>'+
+      '<textarea id="veSummary" class="draft-area">'+esc(v.summary||"")+'</textarea></div>';
+  $("#visitEditSave").onclick = async ()=>{
+    v.date=$("#veDate").value || v.date;
+    v.summary=$("#veSummary").value.trim();
+    pat.updatedAt=Date.now();
+    await DB.putPatient(pat); await refreshPatients();
+    $("#visitEditOverlay").classList.remove("show");
+    openPatientDetail(pat.id);
+    toast("已保存");
+  };
+  $("#visitEditOverlay").classList.add("show");
+}
+
+/* ---------- 开始复诊：新建关联会话 ---------- */
+async function startRevisit(patientId){
+  const pat=State.patients.find(p=>p.id===patientId) || await DB.getPatient(patientId);
+  if(!pat) return;
+  $("#patientOverlay").classList.remove("show");
+  const d=new Date(), p=n=>String(n).padStart(2,"0");
+  const dateStr=(d.getMonth()+1)+"月"+d.getDate()+"日";
+  await createSession({
+    title:(pat.name||"患者")+"·复诊·"+dateStr,
+    patientId:pat.id,
+    templateKey:"wenzhen"
+  });
+  // createSession 已 openSession，systemInstruction 由 currentSystemText 自动附加档案
+  toast("已为「"+(pat.name||"患者")+"」开启复诊，档案已载入上下文");
+}
+
+/* ---------- 存入医案：Flash 起草摘要 → 编辑 → 选患者归档 ---------- */
+const SAVE_CASE_PROMPT =
+  "请把以下这段中医对话整理成一份【结构化就诊摘要】，严格按下列固定栏目逐条输出，每行一项：\n"+
+  "就诊日期：\n主诉：\n四诊要点：\n辨证：\n处方或穴位：\n医嘱与反馈：\n\n"+
+  "要求：①只依据对话中实际出现的信息，缺失的栏目一律写「未记录」，禁止编造或推测补全；"+
+  "②语言精炼，用要点式，不要展开议论；③不要输出本栏目以外的任何额外文字。\n\n对话内容如下：\n";
+
+// 把当前会话路径拼成纯文本（给 Flash 起草用）
+function currentConvPlainText(){
+  const path=computePath();
+  return path.map(m=> (m.role==="user"?"【提问】":"【老师】")+"\n"+m.content).join("\n\n");
+}
+const EMPTY_CASE_TEMPLATE =
+  "就诊日期："+todayISO()+"\n主诉：\n四诊要点：\n辨证：\n处方或穴位：\n医嘱与反馈：";
+
+async function openSaveCase(){
+  if(!State.currentSessionId || computePath().length===0){ toast("当前没有可存档的对话"); return; }
+  const body=$("#saveCaseBody");
+  // 选患者区：默认沿用当前会话关联患者
+  const curSess=State.sessions.find(s=>s.id===State.currentSessionId);
+  const presetPid = curSess ? curSess.patientId : null;
+  body.innerHTML=
+    '<div class="field"><label>就诊摘要（可自由修改）</label>'+
+      '<div class="hint" id="scStatus">正在用快速模式起草摘要…</div>'+
+      '<textarea id="scDraft" class="draft-area" placeholder="摘要正在生成…"></textarea></div>'+
+    '<div class="field"><label>归入患者</label>'+
+      '<div class="hint">选择已有患者，或新建一位。</div>'+
+      '<select id="scPatient" style="margin-bottom:10px;"></select>'+
+      '<button class="btn ghost small" id="scNewPatient">➕ 新建患者</button></div>';
+  // 填充患者下拉
+  function fillPatientSelect(selPid){
+    const sel=$("#scPatient"); sel.innerHTML="";
+    State.patients.forEach(p=>{
+      const o=document.createElement("option"); o.value=p.id; o.textContent=p.name||"未命名"+"（"+((p.visits||[]).length)+"次）";
+      o.textContent=(p.name||"未命名")+"（"+((p.visits||[]).length)+"次就诊）";
+      if(p.id===selPid) o.selected=true;
+      sel.appendChild(o);
+    });
+    if(!State.patients.length){
+      const o=document.createElement("option"); o.value=""; o.textContent="（暂无患者，请先新建）";
+      sel.appendChild(o);
+    }
+  }
+  fillPatientSelect(presetPid);
+  $("#scNewPatient").onclick = ()=> openPatientEdit(null, (rec)=>{ fillPatientSelect(rec.id); });
+  $("#saveCaseOverlay").classList.add("show");
+
+  const draftEl=$("#scDraft"), statusEl=$("#scStatus");
+  // 演示模式（无任何 key）：直接给空白模板手填
+  if(!State.settings.keys || !State.settings.keys.length){
+    statusEl.textContent="演示模式：未连接模型，已给出空白模板，请手动填写。";
+    draftEl.value=EMPTY_CASE_TEMPLATE;
+    return;
+  }
+  // 用 Flash 起草（支持多 key 故障转移）
+  draftEl.value="";
+  let acc="", usedKeyIdx=State.settings.activeKeyIndex;
+  API.send({
+    keys:State.settings.keys, startIndex:State.settings.activeKeyIndex,
+    modelId:State.settings.modelFlash,   // 起草固定用快速模式，省额度
+    systemText:"你是一位严谨的中医病历整理助手，只做信息归纳，不做诊断发挥。",
+    genConfig:buildGenConfig(),
+    contents:[{ role:"user", parts:[{ text: SAVE_CASE_PROMPT + currentConvPlainText() }] }],
+    onUsedKey: async (idx)=>{ usedKeyIdx=idx; await persistActiveKey(idx); },
+    onDelta:(c)=>{ acc+=c; draftEl.value=acc; draftEl.scrollTop=draftEl.scrollHeight; },
+    onDone: async ({text,usage,demo})=>{
+      draftEl.value=(text||acc||"").trim()||EMPTY_CASE_TEMPLATE;
+      statusEl.textContent="摘要已生成，请核对修改后归档。";
+      if(!demo && usage) await accrueUsage(usage, usedKeyIdx);
+    },
+    onError:(err)=>{
+      const info=API.explainError(err);
+      statusEl.innerHTML='<span style="color:var(--danger);">起草失败：'+esc(info.main)+'（已填入空白模板，可手动填写）</span>';
+      if(!draftEl.value.trim()) draftEl.value=EMPTY_CASE_TEMPLATE;
+    }
+  });
+}
+
+// 确认入档：把摘要写进所选患者的 visits
+async function confirmSaveCase(){
+  const draft=$("#scDraft").value.trim();
+  if(!draft){ toast("摘要不能为空"); return; }
+  const pid=$("#scPatient").value;
+  if(!pid){ toast("请先选择或新建一位患者"); return; }
+  const pat=State.patients.find(p=>p.id===pid) || await DB.getPatient(pid);
+  if(!pat){ toast("找不到该患者"); return; }
+  // 从摘要里抽就诊日期，抽不到用今天
+  let date=todayISO();
+  const m=draft.match(/就诊日期[：:]\s*(\S+)/);
+  if(m && m[1] && m[1]!=="未记录"){
+    const norm=m[1].replace(/年|月/g,"-").replace(/日/g,"").replace(/\//g,"-");
+    if(/^\d{4}-\d{1,2}(-\d{1,2})?$/.test(norm)) date=norm;
+  }
+  if(!Array.isArray(pat.visits)) pat.visits=[];
+  pat.visits.push({ id:uid(), date, summary:draft, createdAt:Date.now() });
+  pat.updatedAt=Date.now();
+  await DB.putPatient(pat);
+  // 把当前会话关联到该患者（便于后续复诊横幅）
+  const curSess=State.sessions.find(s=>s.id===State.currentSessionId);
+  if(curSess && !curSess.patientId){ curSess.patientId=pat.id; await DB.putSession(curSess); }
+  await refreshPatients(); await refreshSessions();
+  $("#saveCaseOverlay").classList.remove("show");
+  renderStream(); // 刷新患者关联横幅
+  toast("已存入「"+(pat.name||"患者")+"」的医案");
+}
+
+/* ---------- 打印整本医案 ---------- */
+function printPatientCase(patientId){
+  const pat=State.patients.find(p=>p.id===patientId); if(!pat) return;
+  const w=window.open("","_printcase");
+  if(!w){ toast("浏览器拦截了打印窗口，请允许弹出窗口"); return; }
+  const age = pat.birthYear ? ((new Date().getFullYear()-pat.birthYear)+"岁（"+pat.birthYear+"年生）") : (pat.ageText||"未记录");
+  const visits=(pat.visits||[]).slice().sort((a,b)=>
+    (a.date||"").localeCompare(b.date||"") || (a.createdAt||0)-(b.createdAt||0));
+  let rows="";
+  visits.forEach((v,i)=>{
+    rows+='<div class="visit"><div class="vh">第'+(i+1)+'次就诊 · '+esc(v.date||"日期未记录")+'</div>'+
+      '<div class="vb">'+esc(v.summary||"（无摘要）").replace(/\n/g,"<br>")+'</div></div>';
+  });
+  if(!rows) rows='<div style="color:#888;">暂无就诊记录</div>';
+  w.document.write(
+  '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>医案·'+esc(pat.name||"")+'</title><style>'+
+  '@page{size:A4;margin:18mm;} body{font-family:"Songti SC","SimSun",serif;color:#222;line-height:1.8;font-size:14px;}'+
+  'h1{text-align:center;color:#3a5a40;border-bottom:2px solid #3a5a40;padding-bottom:10px;}'+
+  '.info{background:#f7f3ea;padding:10px 14px;border-radius:8px;margin:14px 0;}'+
+  '.info div{margin:2px 0;} .visit{margin:14px 0;page-break-inside:avoid;}'+
+  '.vh{font-weight:bold;color:#3a5a40;border-left:4px solid #9c6644;padding-left:10px;margin-bottom:6px;}'+
+  '.vb{padding:6px 14px;background:#eef3ea;border-radius:8px;}'+
+  '</style></head><body><h1>医案 · '+esc(pat.name||"")+'</h1>'+
+  '<div class="info">'+
+    '<div><b>性别：</b>'+esc(pat.gender||"未记录")+'</div>'+
+    '<div><b>年龄：</b>'+esc(age)+'</div>'+
+    '<div><b>体质/基础：</b>'+esc(pat.constitution||"未记录")+'</div>'+
+    '<div><b>禁忌/慎用：</b>'+esc(pat.taboos||"未记录")+'</div>'+
+  '</div>'+rows+
+  '<script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script></body></html>');
+  w.document.close();
+}
+
+/* ---------- 初始化 ---------- */
+async function init(){
+  setupGlobalErrorHandlers();
+  await loadSettings();
+  renderTemplateBar();
+  renderQuota();
+  wireEvents();
+  setupPWA();
+  await refreshPatients();
+  await refreshSessions();
+  if(State.sessions.length){ await openSession(State.sessions[0].id); }
+  else { renderStream(); }   // 显示空状态
+  // 桌面默认展开侧边栏
+  if(window.innerWidth>820){ $("#sidebar").classList.remove("collapsed"); }
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
