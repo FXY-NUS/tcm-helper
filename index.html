@@ -432,6 +432,49 @@ input,textarea,select{font-family:inherit;font-size:inherit;color:var(--ink);}
 .backdrop{position:absolute;inset:0;background:rgba(0,0,0,.3);z-index:35;display:none;}
 .backdrop.show{display:block;}
 @media(min-width:821px){.backdrop{display:none!important;}}
+
+/* ==================== 题卡（quiz card）样式 ==================== */
+.quiz-card{
+  background:var(--panel);border:2px solid var(--primary-soft);border-radius:var(--radius);
+  margin:14px 0;padding:16px 18px;box-shadow:var(--shadow);
+}
+.quiz-card .qc-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.quiz-card .qc-num{font-weight:700;color:var(--primary);font-size:var(--fs-lg);}
+.quiz-card .qc-tag{background:var(--accent-soft);color:var(--accent);border-radius:999px;
+  padding:3px 12px;font-size:var(--fs-sm);font-weight:600;}
+.quiz-card .qc-stem{font-weight:600;line-height:1.7;margin-bottom:12px;color:var(--ink);}
+.quiz-card .qc-options{display:flex;flex-direction:column;gap:8px;}
+.qc-opt{
+  width:100%;text-align:left;min-height:52px;padding:12px 16px;border-radius:var(--radius);
+  background:var(--bg);border:2px solid var(--line);color:var(--ink);font-weight:600;
+  font-size:var(--fs-base);cursor:pointer;transition:.12s;display:flex;align-items:center;gap:12px;
+  line-height:1.5;
+}
+.qc-opt:hover:not(:disabled){background:var(--primary-soft);border-color:var(--primary);}
+.qc-opt.selected{background:var(--primary-soft);border-color:var(--primary);color:var(--primary-dark);}
+.qc-opt:disabled{cursor:default;opacity:.8;}
+.qc-opt .opt-letter{
+  flex:0 0 30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--fs-sm);
+}
+.qc-opt.selected .opt-letter{background:var(--primary-dark);}
+.qc-shortcuts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.qc-shortcut{
+  min-height:40px;padding:7px 14px;border-radius:999px;background:var(--bg);
+  border:2px solid var(--line);color:var(--ink-soft);font-size:var(--fs-sm);font-weight:600;cursor:pointer;
+}
+.qc-shortcut:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+.quiz-parse-warn{color:var(--warn);font-size:var(--fs-sm);font-weight:600;margin-top:8px;}
+
+/* ==================== 自定义 chip 删除 × ==================== */
+.chip.custom{position:relative;}
+.chip-del-x{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.35);
+  margin-left:6px;font-size:15px;line-height:1;font-weight:700;cursor:pointer;
+  vertical-align:middle;
+}
+.chip-del-x:hover{background:rgba(255,255,255,.65);}
 </style>
 </head>
 <body>
@@ -760,12 +803,16 @@ const DB = (() => {
     async allSettings(){ return reqP((await tx("settings","readonly")).getAll()); },
     // 全量导出/导入（备份）
     async exportAll(){
+      const allSettings = await this.allSettings();
       return {
         meta: { app:"tcm-assistant", version:CONFIG.dbVersion, exportedAt:Date.now() },
         sessions: await this.allSessions(),
         messages: await (async()=>{ return reqP((await tx("messages","readonly")).getAll()); })(),
-        settings: await this.allSettings(),
-        patients: await this.allPatients()
+        settings: allSettings,
+        patients: await this.allPatients(),
+        // customChips 已在 settings 里（key="customChips"），无需单独字段
+        // 但为向后兼容，也单独导出方便查看
+        customChips: (allSettings.find(s=>s.key==="customChips")||{}).value || {}
       };
     },
     async importAll(data){
@@ -778,6 +825,10 @@ const DB = (() => {
         (data.messages||[]).forEach(m=>t.objectStore("messages").put(m));
         (data.settings||[]).forEach(st=>t.objectStore("settings").put(st));
         (data.patients||[]).forEach(p=>t.objectStore("patients").put(p));
+        // 若导入数据里有独立的 customChips 字段（旧格式兼容），合并进 settings
+        if(data.customChips && typeof data.customChips==="object"){
+          t.objectStore("settings").put({ key:"customChips", value:data.customChips });
+        }
       });
       return true;
     }
@@ -854,11 +905,11 @@ const TEMPLATES = [
   },
   {
     key:"ceyan", icon:"📝", name:"自我测验",
-    brief:"它考你答：让它出题，你作答，它批改讲解。",
-    examples:["给我出 5 道太阳病篇的辨证选择题。","出 3 道方剂君臣佐使的辨析题考考我。"],
-    placeholder:"例如：给我出 5 道太阳病篇的辨证选择题。",
+    brief:"它考你答：让它出题，你点选作答，它批改讲解。",
+    examples:["给我出 3 道太阳病篇的辨证选择题。","出 3 道方剂君臣佐使的辨析题考考我。"],
+    placeholder:"例如：给我出 3 道太阳病篇的辨证选择题。",
     system: TEACHER_PERSONA +
-      `\n本次任务是【自我测验】。你来出题考学生：依学生指定范围出题（条文默写/方证辨析/鉴别选择/病案辨证等混合题型），一次出 3-5 题，题干清晰、有梯度。先只给题目，让学生作答；学生作答后再逐题点评、给标准答案与出处，指出失分点。出题须基于真实经典条文与方剂，答案务必准确（按五条约束，尤其②③）。每题标注考点。` +
+      `\n本次任务是【自我测验】。你是一位以经方为本、博采众长的中医老师，正在陪一位用心的学生做【自我测验】。学生记性不好、背不住长段原文，但想持续锻炼辨证思维，请耐心、鼓励，不催促、不说教。\n\n**出题倾向**：依学生指定范围出题，少考死记默写，多考方证对应、鉴别辨析、病案选证。需要考条文记忆时，不要让学生默写整条，改成「补全填空 + 首句提示」型单选题（给出条文首句作引子，挖空关键字句让学生选）。题干清晰、有梯度，默认一次出 **3 题**（学生要求增减则从之）。出题须基于真实经典条文与方剂，选项要有迷惑性但不偏怪。每题标注考点。\n\n**输出格式（必须严格遵守）**：可以先用自然语言说一句开场白或过渡语，然后把本轮全部题目放进一个 fenced code block，围栏语言标记写 \`quiz\`，块内是合法 JSON：\n\`\`\`\`\n\`\`\`quiz\n{"questions":[{"id":1,"type":"single","stem":"题干","options":["选项1","选项2","选项3","选项4"],"tag":"考点"}]}\n\`\`\`\n\`\`\`\`\n规则：\`type\` 固定 \`"single"\`；\`options\` 数组 2–6 项，**不要在选项里写 A./B./C. 前缀**；JSON 用英文双引号、不要尾逗号、不要中文引号。**绝对不要在出题时下发正确答案或解析**——答案只在学生作答或主动索要后才给。\n\n**应答规则**：\n- 学生发「第N题我选X」→ 批改该题：先说对/错，再给标准答案、简要解析、原文出处（书名·篇名或条文号），指出失分点；逐题点评，一次只批改其作答的那道。\n- 学生发「第N题给点提示」→ 给缩小范围/点出辨证关键的线索，**不能说出正确选项**。\n- 学生发「第N题看原文」→ 给相关经典原文 + 出处，不评对错。\n- 学生发「第N题直接看答案」→ 直接给正确选项 + 解析 + 出处，不催她继续。` +
       FIVE_RULES
   },
   {
@@ -1297,6 +1348,187 @@ function mdToHtml(md){
   }
 }
 
+/* ==================== Quiz 解析与渲染 ====================
+   quiz 消息状态：{msgId -> {qid -> chosenLetter}}   (内存，不落库)
+   选题后更新此 map，重新渲染时据此恢复高亮。
+================================================================ */
+const quizAnswerState = {};  // msgId -> { qNum(1-based) -> "A"|"B"|... }
+
+/* 把 AI 消息全文拆成「普通段 / quiz块」交替数组 */
+function splitQuizBlocks(text){
+  const FENCE_RE = /```quiz\n([\s\S]*?)```/g;
+  const segments = [];
+  let lastIdx = 0;
+  let m;
+  while((m = FENCE_RE.exec(text)) !== null){
+    if(m.index > lastIdx) segments.push({ type:"text", raw: text.slice(lastIdx, m.index) });
+    segments.push({ type:"quiz", raw: m[1] });
+    lastIdx = m.index + m[0].length;
+  }
+  if(lastIdx < text.length) segments.push({ type:"text", raw: text.slice(lastIdx) });
+  return segments;
+}
+
+/* JSON 修复链：尝试修正常见漂移后重新 parse */
+function repairAndParseJSON(raw){
+  // Step 1: 直接 parse
+  try{ return JSON.parse(raw); }catch(_){}
+  // Step 2: 修复常见问题
+  let s = raw;
+  // 中文引号 → ASCII 引号
+  s = s.replace(/[""]/g, '"').replace(/['']/g, "'");
+  // 单引号 → 双引号（只替换作为 JSON 字符串包裹符的单引号，保守地替换）
+  s = s.replace(/'([^']*?)'/g, '"$1"');
+  // 尾逗号：,] 或 ,}
+  s = s.replace(/,\s*([}\]])/g, '$1');
+  // 去行注释（//...）
+  s = s.replace(/\/\/[^\n]*/g, '');
+  try{ return JSON.parse(s); }catch(_){}
+  // Step 3: 尝试补缺失的结束括号
+  let attempt = s.trim();
+  if(!attempt.endsWith('}')) attempt += '}';
+  if(!attempt.endsWith(']}')) attempt = attempt.replace(/}$/, ']}');
+  try{ return JSON.parse(attempt); }catch(_){}
+  return null;
+}
+
+/* 在全文中兜底搜索裸 JSON（无围栏时） */
+function findBareQuizJSON(text){
+  const m = text.match(/(\{"questions"\s*:\s*\[[\s\S]*?\}\s*\][\s\S]*?\})/);
+  if(!m) return null;
+  return repairAndParseJSON(m[1]);
+}
+
+/* 字母列表（A/B/C/D…） */
+const OPTION_LETTERS = ["A","B","C","D","E","F"];
+
+/* strip 选项行首的 "A." / "B、" / "a)" 前缀 */
+function stripOptPrefix(s){
+  return (s||"").replace(/^[A-Da-d][.、)]\s*/,"").trim();
+}
+
+/* 把一道题 + 状态渲染为 DOM 元素 */
+function buildQuizCard(q, msgId){
+  const qNum = q.id || 1;
+  const answers = quizAnswerState[msgId] || {};
+  const chosenLetter = answers[qNum] || null;
+
+  const card = document.createElement("div");
+  card.className = "quiz-card";
+  card.dataset.qnum = qNum;
+
+  // 题头：题号 + 考点标签
+  const header = document.createElement("div");
+  header.className = "qc-header";
+  header.innerHTML =
+    '<span class="qc-num">第'+qNum+'题</span>'+
+    (q.tag ? '<span class="qc-tag">'+esc(q.tag)+'</span>' : '');
+  card.appendChild(header);
+
+  // 题干
+  const stem = document.createElement("div");
+  stem.className = "qc-stem";
+  stem.textContent = q.stem || "";
+  card.appendChild(stem);
+
+  // 选项按钮
+  const opts = document.createElement("div");
+  opts.className = "qc-options";
+  const options = (q.options||[]).map(stripOptPrefix);
+  const isAnswered = !!chosenLetter;
+  options.forEach((optText, idx)=>{
+    const letter = OPTION_LETTERS[idx] || String.fromCharCode(65+idx);
+    const btn = document.createElement("button");
+    btn.className = "qc-opt" + (chosenLetter===letter ? " selected" : "");
+    btn.disabled = isAnswered;
+    btn.innerHTML =
+      '<span class="opt-letter">'+esc(letter)+'</span>'+
+      '<span>'+esc(optText)+'</span>';
+    btn.addEventListener("click", ()=>{
+      if(!quizAnswerState[msgId]) quizAnswerState[msgId] = {};
+      quizAnswerState[msgId][qNum] = letter;
+      // 发送选答文本
+      sendMessage("第"+qNum+"题我选 "+letter);
+      // 禁用本题所有按钮并高亮
+      opts.querySelectorAll(".qc-opt").forEach(b=>{
+        b.disabled = true;
+        if(b === btn) b.classList.add("selected");
+      });
+    });
+    opts.appendChild(btn);
+  });
+  card.appendChild(opts);
+
+  // 快捷按钮
+  const shortcuts = document.createElement("div");
+  shortcuts.className = "qc-shortcuts";
+  [
+    { emoji:"💡", label:"给点提示", text:"第"+qNum+"题给点提示" },
+    { emoji:"📖", label:"看原文",   text:"第"+qNum+"题看原文" },
+    { emoji:"✅", label:"直接看答案", text:"第"+qNum+"题直接看答案" }
+  ].forEach(sc=>{
+    const b = document.createElement("button");
+    b.className = "qc-shortcut";
+    b.textContent = sc.emoji+" "+sc.label;
+    b.addEventListener("click", ()=> sendMessage(sc.text));
+    shortcuts.appendChild(b);
+  });
+  card.appendChild(shortcuts);
+
+  return card;
+}
+
+/* 把 AI 消息内容渲染成含题卡的 DOM（返回 DocumentFragment） */
+function renderAiContent(text, msgId){
+  // 先看全文有无 ```quiz 块
+  const segments = splitQuizBlocks(text);
+  const hasQuiz = segments.some(s=>s.type==="quiz");
+
+  // 若没有围栏块，尝试兜底搜索裸 JSON
+  if(!hasQuiz){
+    const bareData = findBareQuizJSON(text);
+    if(bareData && Array.isArray(bareData.questions)){
+      const frag = document.createDocumentFragment();
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = mdToHtml(text);
+      frag.appendChild(wrapper);
+      bareData.questions.forEach(q=> frag.appendChild(buildQuizCard(q, msgId)));
+      return frag;
+    }
+    // 纯普通文本
+    const frag = document.createDocumentFragment();
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = mdToHtml(text);
+    frag.appendChild(wrapper);
+    return frag;
+  }
+
+  // 有 quiz 围栏块，按段渲染
+  const frag = document.createDocumentFragment();
+  segments.forEach(seg=>{
+    if(seg.type==="text"){
+      const t = (seg.raw||"").trim();
+      if(!t) return;
+      const d = document.createElement("div");
+      d.innerHTML = mdToHtml(seg.raw);
+      frag.appendChild(d);
+    } else {
+      // quiz 块
+      const data = repairAndParseJSON(seg.raw);
+      if(data && Array.isArray(data.questions)){
+        data.questions.forEach(q=> frag.appendChild(buildQuizCard(q, msgId)));
+      } else {
+        // 解析彻底失败：降级为代码块 + 警告
+        const d = document.createElement("div");
+        d.innerHTML = '<pre><code>'+esc(seg.raw)+'</code></pre>'+
+          '<div class="quiz-parse-warn">⚠️ 本题格式异常，请直接文字作答</div>';
+        frag.appendChild(d);
+      }
+    }
+  });
+  return frag;
+}
+
 /* ---------- 全局状态 ---------- */
 const State = {
   settings: null,        // {keys:[{label,key}], activeKeyIndex, monthlyLimit, modelPro, modelFlash, fontSize, temperature, tempEnabled, tplOverrides:{}, usage:{月:{keyIdx:{total,byDay:{}}}}}
@@ -1558,20 +1790,36 @@ function renderMsgNode(m){
       return '<img src="'+src+'" alt="图片" loading="lazy">';
     }).join("") +'</div>';
   }
-  const textHtml = m.role==="user" ? esc(m.content).replace(/\n/g,"<br>") : mdToHtml(m.content);
-  const bodyHtml = imgsHtml + textHtml;
   let acts = "";
   if(m.role==="user"){
     acts = '<div class="msg-acts"><button data-act="edit">✏️ 修改并重新提问</button></div>';
   }
-  wrap.innerHTML =
-    '<div class="avatar">'+avatar+'</div>'+
-    '<div class="body">'+
-      '<div class="time">'+fmtHM(m.timestamp)+'</div>'+
-      '<div class="bubble">'+bodyHtml+'</div>'+
-      acts+
-    '</div>';
-  if(m.role==="user"){
+
+  if(m.role==="ai" || m.role==="model"){
+    // AI 消息：先渲染骨架，再把内容（含题卡）append 进 bubble
+    wrap.innerHTML =
+      '<div class="avatar">'+esc(avatar)+'</div>'+
+      '<div class="body">'+
+        '<div class="time">'+fmtHM(m.timestamp)+'</div>'+
+        '<div class="bubble"></div>'+
+      '</div>';
+    const bubble = wrap.querySelector(".bubble");
+    if(imgsHtml){ const d=document.createElement("div"); d.innerHTML=imgsHtml; bubble.appendChild(d); }
+    if(m.content){
+      const rendered = renderAiContent(m.content, m.id);
+      bubble.appendChild(rendered);
+    }
+  } else {
+    // 用户消息
+    const textHtml = esc(m.content).replace(/\n/g,"<br>");
+    const bodyHtml = imgsHtml + textHtml;
+    wrap.innerHTML =
+      '<div class="avatar">'+esc(avatar)+'</div>'+
+      '<div class="body">'+
+        '<div class="time">'+fmtHM(m.timestamp)+'</div>'+
+        '<div class="bubble">'+bodyHtml+'</div>'+
+        acts+
+      '</div>';
     wrap.querySelector('[data-act="edit"]').addEventListener("click", ()=> startEdit(m.id));
   }
   // 图片点击放大
@@ -2171,6 +2419,59 @@ function renderQuota(){
   fill.className="quota-fill"+(pct>=1?" over":pct>=0.8?" warn":"");
 }
 
+/* ---------- 问诊单自定义 chip 持久化 ----------
+   customChips 存在 DB settings key "customChips"。
+   结构：{ groupKey: [{text, count, lastUsed}] }
+   groupKey 与 INQUIRY_SCHEMA 的 id 对应；脉象整体用 "pulseOverall"；
+   各脉位用 "pulse_" + posId。
+   最多 10 条显示（按 count 降序 → lastUsed 降序），容量上限 20。
+   ---------------------------------------------------------------- */
+let _customChipsCache = {};   // 运行时缓存，init 时从 DB 加载
+
+async function loadCustomChips(){
+  _customChipsCache = (await DB.getSetting("customChips", {})) || {};
+}
+async function saveCustomChips(){
+  await DB.setSetting("customChips", _customChipsCache);
+}
+
+/** 向某组追加或更新一个自定义 chip */
+async function addCustomChip(groupKey, text){
+  if(!text || !text.trim()) return;
+  text = text.trim();
+  if(!_customChipsCache[groupKey]) _customChipsCache[groupKey] = [];
+  const arr = _customChipsCache[groupKey];
+  const existing = arr.find(x=>x.text===text);
+  if(existing){
+    existing.count = (existing.count||0)+1;
+    existing.lastUsed = Date.now();
+  } else {
+    arr.push({ text, count:1, lastUsed:Date.now() });
+    // 容量上限 20：超出删 count 最低且 lastUsed 最旧的
+    if(arr.length > 20){
+      arr.sort((a,b)=> (a.count-b.count) || (a.lastUsed-b.lastUsed));
+      arr.splice(0, arr.length-20);
+    }
+  }
+  await saveCustomChips();
+}
+
+/** 从某组删除一个自定义 chip */
+async function removeCustomChip(groupKey, text){
+  if(!_customChipsCache[groupKey]) return;
+  _customChipsCache[groupKey] = _customChipsCache[groupKey].filter(x=>x.text!==text);
+  await saveCustomChips();
+}
+
+/** 取某组应显示的自定义条目（count 降序 → lastUsed 降序，最多 10 条） */
+function getCustomChipOptions(groupKey){
+  const arr = _customChipsCache[groupKey] || [];
+  return arr.slice()
+    .sort((a,b)=> (b.count-a.count) || (b.lastUsed-a.lastUsed))
+    .slice(0,10)
+    .map(x=>x.text);
+}
+
 /* ---------- 问诊单 ---------- */
 /* 问诊单说明：所有字段均可跳过，未填项不进入生成文本。
    每个 chip 组末尾带「✏️ 自填」，可加多个自定义项。 */
@@ -2215,8 +2516,11 @@ function todayISO(){
   return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate());
 }
 
-// 创建一个可多选 chip 组（含自填）。selArr / customArr 为状态数组引用。
-function makeChipGroup(options, selArr, customArr){
+// 创建一个可多选 chip 组（含自填 + 持久化）。
+// groupKey: DB 存储的分组键（可选，不传则不持久化）
+// selArr: 状态数组引用（当前选中的内置项）
+// customArr: 当前会话内选中的自定义项（同步到 inquiryState）
+function makeChipGroup(options, selArr, customArr, groupKey){
   const group=document.createElement("div"); group.className="chip-group";
   options.forEach(opt=>{
     const c=document.createElement("button"); c.className="chip"; c.textContent=opt;
@@ -2227,30 +2531,88 @@ function makeChipGroup(options, selArr, customArr){
     });
     group.appendChild(c);
   });
-  // 已有的自定义项
-  customArr.forEach(val=> group.appendChild(makeCustomChip(val, customArr, group)));
-  // 「✏️ 自填」按钮
+
+  // 「✏️ 自填」按钮（先 append，后面自定义 chip 都 insertBefore 它）
   const add=document.createElement("button"); add.className="chip add-chip"; add.textContent="✏️ 自填";
+  group.appendChild(add);
+
+  // 已选的自定义项（来自 inquiryState，本次已点选过的），插在 add 之前
+  customArr.forEach(val=> group.insertBefore(
+    makePersistCustomChip(val, customArr, group, groupKey, true), add
+  ));
+
+  // 持久化的历史自定义项（未在 customArr 中的，从 DB 缓存追加），插在 add 之前
+  if(groupKey){
+    const histItems = getCustomChipOptions(groupKey).filter(t=> !customArr.includes(t));
+    histItems.forEach(val=>{
+      group.insertBefore(
+        makePersistCustomChip(val, customArr, group, groupKey, false),
+        add
+      );
+    });
+  }
+
   add.addEventListener("click", ()=>{
     const inp=document.createElement("input"); inp.className="chip-inline-input"; inp.placeholder="输入后回车";
     group.insertBefore(inp, add); inp.focus();
-    const commit=()=>{
-      const v=(inp.value||"").trim();
-      if(v && !customArr.includes(v)){ customArr.push(v); group.insertBefore(makeCustomChip(v, customArr, group), inp); }
-      inp.remove();
+    const commit=async ()=>{
+      const v=(inp.value||"").trim(); inp.remove();
+      if(!v) return;
+      if(!customArr.includes(v)){
+        customArr.push(v);
+        if(groupKey) await addCustomChip(groupKey, v);
+        group.insertBefore(makePersistCustomChip(v, customArr, group, groupKey, true), add);
+      }
     };
     inp.addEventListener("keydown",(e)=>{ if(e.key==="Enter"){ e.preventDefault(); commit(); } else if(e.key==="Escape"){ inp.remove(); } });
     inp.addEventListener("blur", commit);
   });
-  group.appendChild(add);
+  // add button was already appended above; no need to re-append
   return group;
 }
-// 一个已选的自定义 chip（再点可删除）
-function makeCustomChip(val, customArr, group){
-  const c=document.createElement("button"); c.className="chip custom on"; c.textContent=val+" ✕";
-  c.title="点击删除";
-  c.addEventListener("click", ()=>{ const i=customArr.indexOf(val); if(i>=0) customArr.splice(i,1); c.remove(); });
+
+// 一个持久化自定义 chip（"on"=已选中；含 × 删除按钮；长按也可触发删除）
+function makePersistCustomChip(val, customArr, group, groupKey, startSelected){
+  const c=document.createElement("button");
+  c.className="chip custom"+(startSelected?" on":"");
+  // 内容：文字 + × 按钮
+  const textSpan=document.createElement("span"); textSpan.textContent=val;
+  const delX=document.createElement("span"); delX.className="chip-del-x"; delX.textContent="×";
+  delX.title="删除此自填项";
+  c.appendChild(textSpan); c.appendChild(delX);
+
+  // 点文字部分 = 切换选中
+  textSpan.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    if(customArr.includes(val)){
+      const i=customArr.indexOf(val); customArr.splice(i,1); c.classList.remove("on");
+    } else {
+      customArr.push(val); c.classList.add("on");
+      if(groupKey) addCustomChip(groupKey, val);
+    }
+  });
+  // 点 × = 从持久化删除并移除 DOM
+  delX.addEventListener("click", async (e)=>{
+    e.stopPropagation();
+    const i=customArr.indexOf(val); if(i>=0) customArr.splice(i,1);
+    if(groupKey) await removeCustomChip(groupKey, val);
+    c.remove();
+  });
+  // 长按也触发删除（适老化：不依赖右键）
+  let _lpTimer=null;
+  c.addEventListener("pointerdown",()=>{ _lpTimer=setTimeout(async ()=>{
+    const i=customArr.indexOf(val); if(i>=0) customArr.splice(i,1);
+    if(groupKey) await removeCustomChip(groupKey, val);
+    c.remove();
+  }, 700); });
+  c.addEventListener("pointerup",()=>clearTimeout(_lpTimer));
+  c.addEventListener("pointercancel",()=>clearTimeout(_lpTimer));
   return c;
+}
+
+// 旧版 makeCustomChip 保留（内部已被 makePersistCustomChip 替代，可能仍被调用）
+function makeCustomChip(val, customArr, group){
+  return makePersistCustomChip(val, customArr, group, null, true);
 }
 
 function ensureArr(obj, key){ if(!Array.isArray(obj[key])) obj[key]=[]; return obj[key]; }
@@ -2334,7 +2696,7 @@ function buildInquiryForm(){
     sec.innerHTML='<div class="sec-label">'+f.label+'</div>';
     const sel=ensureArr(S.chips, f.id);
     const cus=ensureArr(S.custom, f.id);
-    sec.appendChild(makeChipGroup(f.options, sel, cus));
+    sec.appendChild(makeChipGroup(f.options, sel, cus, f.id));
     body.appendChild(sec);
   });
 
@@ -2343,7 +2705,7 @@ function buildInquiryForm(){
   secMai.innerHTML='<div class="sec-label">脉象</div><div class="inq-hint-sub">先选整体脉象即可；需要更细可展开六部脉诊。</div>';
   const overallLabel=document.createElement("div"); overallLabel.style.cssText="font-weight:700;margin-bottom:4px;color:var(--ink);";
   overallLabel.textContent="整体脉象（可多选）"; secMai.appendChild(overallLabel);
-  secMai.appendChild(makeChipGroup(PULSE_OPTIONS, S.pulseOverall, ensureArr(S.custom,"pulseOverall")));
+  secMai.appendChild(makeChipGroup(PULSE_OPTIONS, S.pulseOverall, ensureArr(S.custom,"pulseOverall"), "pulseOverall"));
   // 展开开关
   const tog=document.createElement("div"); tog.className="pulse-toggle";
   const sw=document.createElement("div"); sw.className="switch"+(S.pulseDetailOpen?" on":"");
@@ -2356,7 +2718,7 @@ function buildInquiryForm(){
     pp.innerHTML='<div class="pp-label">'+pos.label+'</div>';
     const sel=ensureArr(S.pulseDetail, pos.id);
     const cus=ensureArr(S.custom, "pulse_"+pos.id);
-    pp.appendChild(makeChipGroup(PULSE_OPTIONS, sel, cus));
+    pp.appendChild(makeChipGroup(PULSE_OPTIONS, sel, cus, "pulse_"+pos.id));
     detail.appendChild(pp);
   });
   secMai.appendChild(detail);
@@ -2727,7 +3089,7 @@ async function importBackup(file){
     const text = await file.text();
     const data = JSON.parse(text);
     await DB.importAll(data);
-    await loadSettings(); await refreshSessions();
+    await loadSettings(); await loadCustomChips(); await refreshSessions();
     if(State.sessions.length) await openSession(State.sessions[0].id);
     renderQuota();
     $("#settingsOverlay").classList.remove("show");
@@ -2741,12 +3103,30 @@ function currentConvForExport(){
   const path = computePath();
   return { title: sess?sess.title:"对话", path };
 }
+// 把 AI 消息内容中的 quiz 块降级为纯文本（用于 txt 导出）
+function quizToPlainText(content){
+  return (content||"").replace(/```quiz\n([\s\S]*?)```/g, (match, raw)=>{
+    try{
+      const data = repairAndParseJSON(raw);
+      if(data && Array.isArray(data.questions)){
+        return data.questions.map(q=>{
+          const opts = (q.options||[]).map(stripOptPrefix);
+          const letters = opts.map((o,i)=> (OPTION_LETTERS[i]||String.fromCharCode(65+i))+". "+o).join("\n    ");
+          return "[题"+q.id+(q.tag?" · "+q.tag:"")+"] "+q.stem+"\n    "+letters;
+        }).join("\n\n");
+      }
+    }catch(_){}
+    return raw;
+  });
+}
+
 function exportTxt(){
   const {title,path}=currentConvForExport();
   let out = title+"\n"+"=".repeat(24)+"\n\n";
   path.forEach(m=>{
     const imgMark = (Array.isArray(m.images)&&m.images.length) ? ("[图片"+(m.images.length>1?("×"+m.images.length):"")+"]\n") : "";
-    out += (m.role==="user"?"● 提问":"■ 老师")+"  ["+fmtTime(m.timestamp)+"]\n"+imgMark+m.content+"\n\n";
+    const content = m.role!=="user" ? quizToPlainText(m.content) : m.content;
+    out += (m.role==="user"?"● 提问":"■ 老师")+"  ["+fmtTime(m.timestamp)+"]\n"+imgMark+content+"\n\n";
   });
   const blob=new Blob([out],{type:"text/plain;charset=utf-8"});
   const url=URL.createObjectURL(blob);
@@ -2758,7 +3138,8 @@ async function copyAll(){
   let out=title+"\n\n";
   path.forEach(m=>{
     const imgMark = (Array.isArray(m.images)&&m.images.length) ? ("[图片"+(m.images.length>1?("×"+m.images.length):"")+"]\n") : "";
-    out+=(m.role==="user"?"【提问】":"【老师】")+"\n"+imgMark+m.content+"\n\n";
+    const content = m.role!=="user" ? quizToPlainText(m.content) : m.content;
+    out+=(m.role==="user"?"【提问】":"【老师】")+"\n"+imgMark+content+"\n\n";
   });
   try{ await navigator.clipboard.writeText(out); toast("已复制全文"); }
   catch(e){
@@ -3347,6 +3728,7 @@ function printPatientCase(patientId){
 async function init(){
   setupGlobalErrorHandlers();
   await loadSettings();
+  await loadCustomChips();   // 加载持久化自定义 chip
   renderTemplateBar();
   renderQuota();
   wireEvents();
