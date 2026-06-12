@@ -126,6 +126,17 @@ html[data-fontsize="特大"]{--fs-base:24px;--fs-sm:20px;--fs-lg:28px;--fs-title
   --shadow-sm:0 1px 0 rgba(60,50,30,.05);
   --shadow:0 1px 2px rgba(60,50,30,.08),0 0 0 1px rgba(60,50,30,.03);
   --shadow-lg:0 8px 28px rgba(60,50,30,.14);
+
+  /* 程度色阶 1–5（腹诊/舌诊共用）*/
+  --grade-1:#e6dec8;
+  --grade-2:#cdbe96;
+  --grade-3:#a89466;
+  --grade-4:#7a6238;
+  --grade-5:#4a3617;
+  --grade-on-light:#1f1d18;
+  --grade-on-dark:#fbf7ea;
+  --pick-on:var(--primary);
+  --pick-soft:var(--primary-soft);
 }
 
 /* ---- 主题 2：医院系统 ---- */
@@ -171,6 +182,16 @@ html[data-fontsize="特大"]{--fs-base:24px;--fs-sm:20px;--fs-lg:28px;--fs-title
   --shadow-sm:0 1px 0 rgba(20,40,60,.05);
   --shadow:0 1px 2px rgba(20,40,60,.08);
   --shadow-lg:0 4px 16px rgba(20,40,60,.12);
+
+  --grade-1:#e2eef2;
+  --grade-2:#b9d6df;
+  --grade-3:#7eb3c2;
+  --grade-4:#48899b;
+  --grade-5:#1f5b6b;
+  --grade-on-light:#15212b;
+  --grade-on-dark:#ffffff;
+  --pick-on:var(--primary);
+  --pick-soft:var(--primary-soft);
 }
 
 /* ---- 主题 3：深色 ---- */
@@ -216,6 +237,16 @@ html[data-fontsize="特大"]{--fs-base:24px;--fs-sm:20px;--fs-lg:28px;--fs-title
   --shadow-sm:0 1px 0 rgba(0,0,0,.30);
   --shadow:0 2px 8px rgba(0,0,0,.40);
   --shadow-lg:0 10px 32px rgba(0,0,0,.55);
+
+  --grade-1:#2c3b30;
+  --grade-2:#3f5a44;
+  --grade-3:#5a8260;
+  --grade-4:#7fb985;
+  --grade-5:#a7d6ac;
+  --grade-on-light:#15181d;
+  --grade-on-dark:#15181d;
+  --pick-on:var(--primary);
+  --pick-soft:var(--primary-soft);
 }
 
 /* ==================== 全局重置 ==================== */
@@ -605,6 +636,33 @@ select:focus-visible,
   overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.3);
 }
 .modal-full{max-width:900px;}
+
+/* ==================== 拍录记录单 · 对照核对 ==================== */
+.ocr-modal{max-width:920px;}
+.ocr-status{font-size:var(--fs-sm);color:var(--ink-soft);padding:6px 2px 12px;line-height:1.5;}
+.ocr-status.err{color:var(--danger);}
+.ocr-imgwrap{position:relative;background:var(--bg);border:2px solid var(--line);border-radius:var(--radius-lg);
+  overflow:hidden;height:300px;display:flex;align-items:center;justify-content:center;}
+.ocr-imgwrap img{max-width:100%;max-height:100%;object-fit:contain;cursor:zoom-in;transition:transform .12s;}
+.ocr-imgwrap img.zoomed{cursor:zoom-out;transform:scale(2);}
+.ocr-imgbar{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:10px 0 4px;}
+.ocr-imgbar .ocr-pageinfo{font-size:var(--fs-sm);color:var(--ink-soft);min-width:64px;text-align:center;}
+.ocr-imgbar button{min-height:44px;min-width:44px;}
+.ocr-note{display:flex;gap:8px;align-items:flex-start;background:var(--info-soft);color:var(--ink);
+  border-radius:var(--radius);padding:10px 12px;font-size:var(--fs-sm);line-height:1.5;margin:14px 0;}
+.ocr-note svg{flex:0 0 auto;width:20px;height:20px;color:var(--info);margin-top:1px;}
+.ocr-section-title{font-weight:700;color:var(--primary);margin:16px 0 6px;font-size:var(--fs-base);}
+#ocrText{width:100%;min-height:200px;padding:13px 14px;border-radius:var(--radius);border:2px solid var(--line);
+  background:var(--field-bg);outline:none;color:var(--ink);font-family:var(--font-ui);line-height:1.6;resize:vertical;}
+#ocrText:focus{border-color:var(--primary);}
+.ocr-callout{border-radius:var(--radius);padding:12px 14px;margin-top:12px;font-size:var(--fs-sm);line-height:1.6;
+  white-space:pre-wrap;word-break:break-word;}
+.ocr-callout .ocr-callout-h{display:flex;gap:7px;align-items:center;font-weight:700;margin-bottom:6px;}
+.ocr-callout .ocr-callout-h svg{width:19px;height:19px;flex:0 0 auto;}
+.ocr-callout.dose{background:var(--warn-soft);border:1.5px solid var(--warn);}
+.ocr-callout.dose .ocr-callout-h{color:var(--warn);}
+.ocr-callout.uncertain{background:var(--vermilion-soft);border:1.5px solid var(--danger);}
+.ocr-callout.uncertain .ocr-callout-h{color:var(--danger);}
 .modal-head{
   position:sticky;top:0;background:var(--panel);padding:18px 22px;border-bottom:1px solid var(--line);
   display:flex;align-items:center;justify-content:space-between;z-index:2;
@@ -663,6 +721,436 @@ select:focus-visible,
 .pulse-detail{margin-top:8px;}
 .pulse-pos{margin-bottom:14px;padding:10px 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line);}
 .pulse-pos .pp-label{font-weight:700;color:var(--accent);margin-bottom:6px;}
+
+/* ---- 脉诊矩阵 ---- */
+.pm-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:10px;
+}
+@media(max-width:600px){
+  .pm-grid{grid-template-columns:1fr;}
+}
+.pm-hand{
+  border:1.5px solid var(--line-strong);
+  border-radius:var(--radius);
+  overflow:visible;
+  background:var(--paper);
+}
+.pm-hand-title{
+  background:var(--primary-soft);
+  color:var(--primary);
+  font-family:var(--font-display);
+  font-weight:700;
+  letter-spacing:.12em;
+  text-align:center;
+  padding:7px 0;
+  font-size:var(--fs-base);
+  border-bottom:1.5px solid var(--line-strong);
+  border-radius:var(--radius) var(--radius) 0 0;
+}
+.pm-row:last-child .pm-levels{border-radius:0 0 var(--radius) 0;}
+.pm-row:last-child .pm-row-head{border-radius:0 0 0 var(--radius);}
+.pm-row{
+  display:flex;
+  flex-direction:column;
+  border-bottom:1px solid var(--line);
+}
+.pm-row-inner{display:flex;align-items:stretch;width:100%;}
+.pm-row:last-child{border-bottom:none;}
+.pm-row-head{
+  flex:0 0 60px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:8px 4px;
+  border-right:1.5px solid var(--line-strong);
+  background:var(--bg-elev);
+  gap:2px;
+}
+.pm-row-head .rh-name{
+  font-weight:700;
+  color:var(--primary);
+  font-size:var(--fs-base);
+  font-family:var(--font-display);
+}
+.pm-row-head .rh-organ{
+  font-size:11px;
+  color:var(--ink-mute);
+  line-height:1.2;
+  text-align:center;
+}
+.pm-levels{
+  flex:1;
+  display:flex;
+  padding:8px;
+  gap:6px;
+}
+/* 候位按钮 */
+.pm-lvl{
+  flex:1;
+  min-height:44px;
+  border-radius:var(--radius-sm);
+  background:var(--bg-elev);
+  border:1.5px solid var(--line);
+  font-size:var(--fs-sm);
+  color:var(--ink-soft);
+  font-weight:600;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:.12s;
+  padding:4px 2px;
+  position:relative;
+  gap:2px;
+  line-height:1.2;
+}
+.pm-lvl:hover{
+  border-color:var(--primary);
+  color:var(--primary);
+  background:var(--primary-soft);
+}
+.pm-lvl.pm-has-data{
+  border-color:var(--primary);
+  background:var(--primary-soft);
+  color:var(--primary);
+}
+.pm-lvl.pm-open{
+  border-color:var(--accent);
+  background:var(--accent-soft);
+  color:var(--accent);
+}
+.pm-lvl .lvl-name{font-size:var(--fs-sm);font-weight:700;}
+.pm-lvl .lvl-badge{
+  font-size:10px;
+  color:var(--primary);
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  text-align:center;
+  padding:0 2px;
+}
+/* 候位脉象面板（行内展开） */
+.pm-panel{
+  display:none;
+  width:100%;
+  background:var(--bg-elev);
+  border-top:1px solid var(--line);
+  padding:10px 12px;
+}
+.pm-panel.open{display:block;}
+.pm-panel-title{
+  font-size:var(--fs-sm);
+  font-weight:700;
+  color:var(--primary);
+  margin-bottom:6px;
+}
+.pm-panel .chip-group{margin-top:0;}
+/* 趺阳/太溪附加行 */
+.pm-extra{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+.pm-extra-item{
+  flex:1;
+  min-width:160px;
+  border:1.5px solid var(--line-strong);
+  border-radius:var(--radius);
+  overflow:hidden;
+  background:var(--paper);
+}
+.pm-extra-title{
+  background:var(--bg-elev);
+  color:var(--primary);
+  font-weight:700;
+  padding:6px 10px;
+  border-bottom:1px solid var(--line);
+  font-size:var(--fs-sm);
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.pm-extra-title .ext-badge{
+  font-size:10px;
+  color:var(--ink-soft);
+  font-weight:400;
+  flex:1;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.pm-extra-chips{padding:8px;}
+
+/* ---- 舌诊分区组件 ---- */
+.sd-toggle{display:flex;align-items:center;gap:10px;margin:10px 0;}
+.sd-detail{margin-top:10px;}
+/* SVG 舌图容器 */
+.sd-map-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+}
+.sd-map-inner{
+  display:flex;
+  gap:16px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.tcm-zonemap{display:inline-block;line-height:0;}
+.tcm-zonemap svg{display:block;width:100%;height:auto;}
+.tcm-zone{
+  fill:var(--paper);
+  stroke:var(--line-strong);
+  stroke-width:1.5;
+  cursor:pointer;
+  transition:fill .15s,stroke .15s;
+}
+.tcm-zone:hover{fill:var(--primary-soft);stroke:var(--primary);}
+.tcm-zone.is-active{fill:var(--primary-soft);stroke:var(--primary);stroke-width:2.5;}
+.tcm-zone.sd-has-data{fill:var(--primary-soft);stroke:var(--primary);}
+.tcm-zone.sd-zone-open{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.5;}
+.tcm-zone-label{
+  font-family:var(--font-display);font-size:12px;
+  fill:var(--ink);pointer-events:none;text-anchor:middle;
+  paint-order:stroke;stroke:var(--paper);stroke-width:3px;
+}
+/* 舌下小图 */
+.sd-sublingual-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+}
+.sd-sublingual-label{
+  font-size:var(--fs-sm);
+  color:var(--ink-soft);
+  text-align:center;
+  font-family:var(--font-display);
+}
+/* 分区面板 */
+.sd-zone-panel{
+  display:none;
+  margin-top:10px;
+  background:var(--bg-elev);
+  border:1.5px solid var(--line-strong);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+.sd-zone-panel.open{display:block;}
+.sd-panel-head{
+  background:var(--primary-soft);
+  color:var(--primary);
+  font-weight:700;
+  font-family:var(--font-display);
+  padding:9px 14px;
+  border-bottom:1.5px solid var(--line-strong);
+  display:flex;align-items:center;gap:8px;
+}
+.sd-panel-body{padding:10px 12px;display:flex;flex-direction:column;gap:12px;}
+.sd-sub-label{
+  font-size:var(--fs-sm);
+  font-weight:700;
+  color:var(--primary);
+  margin-bottom:4px;
+}
+/* 颜色程度选择器 */
+.sd-degree-row{
+  display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;
+}
+.sd-degree-btn{
+  flex:1;min-width:60px;min-height:44px;
+  border-radius:var(--radius-sm);
+  border:1.5px solid var(--line);
+  background:var(--bg-elev);
+  font-size:var(--fs-sm);font-weight:600;
+  cursor:pointer;transition:.12s;
+  display:flex;align-items:center;justify-content:center;
+}
+.sd-degree-btn:hover{border-color:var(--primary);background:var(--primary-soft);color:var(--primary);}
+.sd-degree-btn.is-selected{background:var(--pick-on);color:var(--ink-on-dark);border-color:var(--pick-on);}
+.sd-degree-btn[data-deg="浅"]{background:var(--grade-1);color:var(--grade-on-light);}
+.sd-degree-btn[data-deg="中"]{background:var(--grade-3);color:var(--grade-on-light);}
+.sd-degree-btn[data-deg="深"]{background:var(--grade-5);color:var(--grade-on-dark);}
+.sd-degree-btn[data-deg="浅"].is-selected{outline:3px solid var(--primary);outline-offset:2px;}
+.sd-degree-btn[data-deg="中"].is-selected{outline:3px solid var(--primary);outline-offset:2px;}
+.sd-degree-btn[data-deg="深"].is-selected{outline:3px solid var(--primary);outline-offset:2px;}
+/* 颜色chip被选中后隐藏程度区 → 下面用 JS 控制，这里预留 */
+.sd-degree-wrap{display:none;}
+.sd-degree-wrap.visible{display:block;}
+@media(max-width:600px){
+  .sd-map-inner{flex-direction:column;align-items:center;}
+  .tcm-zonemap svg{max-width:240px;}
+  .sd-zone-panel{margin-left:0;margin-right:0;}
+}
+
+/* ---- 腹诊组件 abd- ---- */
+.abd-toggle{display:flex;align-items:center;gap:10px;margin:10px 0;}
+.abd-detail{margin-top:10px;}
+.abd-body{display:flex;flex-direction:column;gap:12px;align-items:center;}
+/* SVG 容器 */
+.abd-svg-wrap{
+  position:relative;
+  overflow-x:auto;
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.abd-svg-inner{
+  position:relative;
+  display:inline-block;
+  line-height:0;
+}
+.abd-svg-inner svg{display:block;}
+/* 穴位点 */
+.abd-acu{
+  fill:var(--paper);
+  stroke:var(--ink-soft);
+  stroke-width:1.5;
+  cursor:pointer;
+  transition:.15s;
+  r:5;
+}
+.abd-acu:hover{stroke:var(--pick-on);r:7;}
+.abd-acu.abd-has-data{fill:var(--pick-soft);stroke:var(--pick-on);}
+.abd-acu.abd-open{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.5;r:7;}
+/* 疼痛色环（grade 1-5）*/
+.abd-pain-ring{fill:none;stroke-width:3;pointer-events:none;opacity:.85;}
+.abd-pain-ring[data-grade="1"]{stroke:var(--grade-1);}
+.abd-pain-ring[data-grade="2"]{stroke:var(--grade-2);}
+.abd-pain-ring[data-grade="3"]{stroke:var(--grade-3);}
+.abd-pain-ring[data-grade="4"]{stroke:var(--grade-4);}
+.abd-pain-ring[data-grade="5"]{stroke:var(--grade-5);}
+/* 等级角标 */
+.abd-badge-text{
+  font-size:9px;font-weight:700;fill:var(--grade-on-dark);
+  pointer-events:none;text-anchor:middle;dominant-baseline:middle;
+  paint-order:stroke;stroke:var(--paper);stroke-width:2px;
+}
+/* 穴位标签 */
+.abd-acu-label{
+  font-family:var(--font-display);font-size:10px;
+  fill:var(--ink-soft);pointer-events:none;
+  paint-order:stroke;stroke:var(--paper);stroke-width:2.5px;
+}
+/* 缩放控制 */
+.abd-zoom-bar{
+  display:flex;gap:8px;align-items:center;margin:6px 0;
+  font-size:var(--fs-sm);color:var(--ink-soft);
+}
+.abd-zoom-bar button{
+  min-width:44px;min-height:36px;border-radius:var(--radius-sm);
+  background:var(--bg-elev);border:1.5px solid var(--line);
+  color:var(--ink);font-weight:700;cursor:pointer;transition:.12s;
+  font-size:var(--fs-sm);
+}
+.abd-zoom-bar button.active{background:var(--primary-soft);border-color:var(--primary);color:var(--primary);}
+/* 穴位面板 */
+.abd-panel{
+  display:none;
+  margin-top:10px;
+  background:var(--bg-elev);
+  border:1.5px solid var(--line-strong);
+  border-radius:var(--radius);
+  overflow:hidden;
+  width:100%;
+}
+.abd-panel.open{display:block;}
+.abd-panel-head{
+  background:var(--primary-soft);
+  color:var(--primary);
+  font-weight:700;
+  font-family:var(--font-display);
+  padding:9px 14px;
+  border-bottom:1.5px solid var(--line-strong);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.abd-panel-close{
+  background:none;border:none;cursor:pointer;color:var(--ink-soft);
+  font-size:20px;line-height:1;padding:2px 6px;border-radius:6px;min-height:36px;min-width:36px;
+}
+.abd-panel-close:hover{background:var(--bg);}
+.abd-panel-body{padding:10px 12px;display:flex;flex-direction:column;gap:12px;}
+.abd-sub-label{font-size:var(--fs-sm);font-weight:700;color:var(--primary);margin-bottom:2px;}
+/* 等级按钮行（1-5）*/
+.abd-grade-row{display:flex;gap:6px;flex-wrap:wrap;}
+.abd-grade-btn{
+  flex:1;min-width:44px;min-height:46px;
+  border-radius:var(--radius-sm);
+  border:1.5px solid var(--line);
+  background:var(--bg-elev);
+  font-size:var(--fs-sm);font-weight:700;
+  cursor:pointer;transition:.12s;
+  display:flex;align-items:center;justify-content:center;
+}
+.abd-grade-btn:hover{border-color:var(--pick-on);color:var(--pick-on);}
+.abd-grade-btn[data-grade="1"]{background:var(--grade-1);color:var(--grade-on-light);}
+.abd-grade-btn[data-grade="2"]{background:var(--grade-2);color:var(--grade-on-light);}
+.abd-grade-btn[data-grade="3"]{background:var(--grade-3);color:var(--grade-on-light);}
+.abd-grade-btn[data-grade="4"]{background:var(--grade-4);color:var(--grade-on-dark);}
+.abd-grade-btn[data-grade="5"]{background:var(--grade-5);color:var(--grade-on-dark);}
+.abd-grade-btn.is-selected{outline:3px solid var(--pick-on);outline-offset:2px;}
+/* 清除按钮 */
+.abd-clear-btn{
+  margin-top:4px;
+  min-height:44px;padding:8px 14px;
+  border-radius:var(--radius-sm);
+  background:var(--bg-elev);border:1.5px solid var(--line);
+  color:var(--danger);font-weight:600;cursor:pointer;
+  width:100%;transition:.12s;
+}
+.abd-clear-btn:hover{background:var(--danger-soft);border-color:var(--danger);}
+/* 自定义穴列表 */
+.abd-custom-list{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
+.abd-custom-item{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 12px;border-radius:var(--radius-sm);
+  background:var(--bg-elev);border:1.5px solid var(--line);
+  cursor:pointer;transition:.12s;
+}
+.abd-custom-item:hover{border-color:var(--pick-on);}
+.abd-custom-item.abd-has-data{border-color:var(--primary);background:var(--primary-soft);}
+.abd-custom-item.abd-open{border-color:var(--accent);background:var(--accent-soft);}
+.abd-custom-name{font-weight:700;color:var(--ink);}
+.abd-custom-pos{font-size:var(--fs-sm);color:var(--ink-soft);}
+.abd-custom-del{
+  margin-left:auto;background:none;border:none;color:var(--danger);
+  font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px;min-height:36px;min-width:36px;
+}
+.abd-custom-del:hover{background:var(--danger-soft);}
+.abd-add-custom{
+  min-height:46px;background:var(--primary-soft);color:var(--primary);
+  border:2px dashed var(--primary);border-radius:var(--radius-sm);
+  font-weight:600;cursor:pointer;width:100%;margin-top:8px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:var(--fs-sm);
+}
+/* 色阶图例条 */
+.abd-legend{
+  display:inline-flex;gap:0;border:1px solid var(--line);border-radius:var(--radius-pill);
+  overflow:hidden;font-size:11px;margin:6px auto 0;
+}
+.abd-legend .seg{
+  width:28px;height:18px;display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:var(--grade-on-light);
+}
+.abd-legend .seg:nth-child(1){background:var(--grade-1);}
+.abd-legend .seg:nth-child(2){background:var(--grade-2);}
+.abd-legend .seg:nth-child(3){background:var(--grade-3);}
+.abd-legend .seg:nth-child(4){background:var(--grade-4);color:var(--grade-on-dark);}
+.abd-legend .seg:nth-child(5){background:var(--grade-5);color:var(--grade-on-dark);}
+@media(max-width:600px){
+  .abd-svg-wrap{overflow-x:auto;}
+}
 
 /* toast 提示 */
 #toast{
@@ -778,30 +1266,108 @@ select:focus-visible,
   vertical-align:middle;
 }
 .chip-del-x:hover{background:rgba(255,255,255,.65);}
+
+/* ==================== SVG 图标系统 ==================== */
+.icon{
+  width:1.2em;height:1.2em;vertical-align:-0.2em;
+  stroke:currentColor;fill:none;flex-shrink:0;
+}
+/* 工具栏内图标稍大，与 icon-btn 字号匹配 */
+.icon-btn .icon{width:1.4em;height:1.4em;vertical-align:middle;}
+/* 模板栏按钮图标 */
+.tpl-btn .icon{width:1.1em;height:1.1em;vertical-align:-0.15em;}
+/* 按钮规格统一补丁 */
+.composer-row2 .btn{min-height:44px;padding:8px 14px;font-size:var(--fs-sm);}
+.topbar .icon-btn{min-width:44px;min-height:44px;}
 </style>
 </head>
 <body>
+<!-- SVG 图标 sprite（细线风格，stroke=currentColor，fill=none） -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <!-- 三横线菜单 -->
+  <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6" stroke-width="1.8" stroke-linecap="round"/><line x1="3" y1="12" x2="21" y2="12" stroke-width="1.8" stroke-linecap="round"/><line x1="3" y1="18" x2="21" y2="18" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 加号 -->
+  <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke-width="1.8" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 存档（托盘+下箭头）-->
+  <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="4" rx="1.5" stroke-width="1.8" stroke-linejoin="round"/><path d="M5 7v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7" stroke-width="1.8" stroke-linejoin="round"/><polyline points="9,11 12,14 15,11" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="14" x2="12" y2="8" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 纸张/诊疗单 -->
+  <symbol id="i-sheet" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" stroke-width="1.8" stroke-linejoin="round"/><line x1="8" y1="7" x2="16" y2="7" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="11" x2="16" y2="11" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="15" x2="13" y2="15" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 下载箭头 -->
+  <symbol id="i-download" viewBox="0 0 24 24"><polyline points="8,10 12,14 16,10" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="14" x2="12" y2="4" stroke-width="1.8" stroke-linecap="round"/><path d="M4 17v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 上传箭头 -->
+  <symbol id="i-upload" viewBox="0 0 24 24"><polyline points="8,14 12,10 16,14" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="10" x2="12" y2="20" stroke-width="1.8" stroke-linecap="round"/><path d="M4 7v-1a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 列表/导航 -->
+  <symbol id="i-list" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="12" x2="21" y2="12" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="18" x2="21" y2="18" stroke-width="1.8" stroke-linecap="round"/><circle cx="3.5" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="3.5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="3.5" cy="18" r="1" fill="currentColor" stroke="none"/></symbol>
+  <!-- 齿轮/设置 -->
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <!-- 对话气泡 -->
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <!-- 文件夹 -->
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <!-- 打印 -->
+  <symbol id="i-print" viewBox="0 0 24 24"><polyline points="6,9 6,2 18,2 18,9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" stroke-width="1.8" stroke-linejoin="round"/><rect x="6" y="14" width="12" height="8" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <!-- 听诊器（问诊推演）-->
+  <symbol id="i-stetho" viewBox="0 0 24 24"><path d="M4 3a2 2 0 0 0-2 2v3a6 6 0 0 0 6 6 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 14a6 6 0 0 0 6 6" stroke-width="1.8" stroke-linecap="round"/><circle cx="20" cy="20" r="2" stroke-width="1.8"/></symbol>
+  <!-- 树叶（方剂）-->
+  <symbol id="i-herb" viewBox="0 0 24 24"><path d="M12 2C6 2 3 7 3 12c0 4 2 7 5 9" stroke-width="1.8" stroke-linecap="round"/><path d="M12 2c6 0 9 5 9 10 0 4-2 7-5 9" stroke-width="1.8" stroke-linecap="round"/><path d="M12 22V8" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 细针（针灸）-->
+  <symbol id="i-needle" viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5" stroke-width="1.8" stroke-linecap="round"/><polyline points="15,5 19,5 19,9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="5" y1="19" x2="8" y2="14" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 阴阳（医易）-->
+  <symbol id="i-yinyang" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.8"/><path d="M12 3a9 9 0 0 1 0 18A4.5 4.5 0 0 1 12 12a4.5 4.5 0 0 0 0-9z" stroke-width="1.8"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="16.5" r="1.2" fill="currentColor" stroke="none"/></symbol>
+  <!-- 书/条文 -->
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke-width="1.8" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <!-- 天平（鉴别）-->
+  <symbol id="i-scale" viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21" stroke-width="1.8" stroke-linecap="round"/><path d="M5 21h14" stroke-width="1.8" stroke-linecap="round"/><path d="M5 9l-2 6h4z" stroke-width="1.8" stroke-linejoin="round"/><path d="M19 9l-2 6h4z" stroke-width="1.8" stroke-linejoin="round"/><line x1="5" y1="9" x2="12" y2="3" stroke-width="1.8" stroke-linecap="round"/><line x1="19" y1="9" x2="12" y2="3" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 铅笔（编辑/自我测验/自填）-->
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <!-- 搜索（医案）-->
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="1.8"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 灯泡（提示）-->
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 21h6" stroke-width="1.8" stroke-linecap="round"/><path d="M12 3a6 6 0 0 1 6 6c0 2.22-1.21 4.16-3 5.2V17H9v-2.8C7.21 13.16 6 11.22 6 9a6 6 0 0 1 6-6z" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <!-- 勾选（答案）-->
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <!-- 相机（图片）-->
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke-width="1.8"/></symbol>
+  <!-- 信息（圆圈 i）-->
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.8"/><line x1="12" y1="11" x2="12" y2="16" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></symbol>
+  <!-- 警示（三角叹号）-->
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" stroke-width="1.8" stroke-linejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></symbol>
+  <!-- 拍录记录单（纸张+取景框）-->
+  <symbol id="i-scan-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 9v10a2 2 0 0 1-2 2h-7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,3 14,9 19,9" stroke-width="1.8" stroke-linejoin="round"/><path d="M3 17v2.5A1.5 1.5 0 0 0 4.5 21H7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="9" y1="9" x2="11" y2="9" stroke-width="1.8" stroke-linecap="round"/><line x1="9" y1="13" x2="14" y2="13" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 钥匙（API key）-->
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5" stroke-width="1.8"/><path d="M21 2l-9.6 9.6" stroke-width="1.8" stroke-linecap="round"/><path d="M15.5 7.5l3 3" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 扳手（测试连接）-->
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <!-- 圆形硬币（额度）-->
+  <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.8"/><line x1="8" y1="12" x2="16" y2="12" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 复制 -->
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" stroke-width="1.8" stroke-linejoin="round"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <!-- 文本文件 -->
+  <symbol id="i-file-text" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke-width="1.8" stroke-linejoin="round"/><polyline points="14,2 14,8 20,8" stroke-width="1.8" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke-width="1.8" stroke-linecap="round"/><line x1="10" y1="9" x2="8" y2="9" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <!-- 叶草（侧栏标题装饰）-->
+  <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 22" stroke-width="1.8" stroke-linecap="round"/><path d="M3.82 22C5 18 7 14 12 12c4-1.5 7-1 9-4-3 1-5 0-7-2-3-3-4-7-1-10 2 5 5 7 9 7 0 4-2 7-8 9z" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+</svg>
 <div id="app">
   <!-- 侧边栏 -->
   <aside id="sidebar" class="collapsed">
     <div class="sb-head">
-      <div class="sb-title serif">🌿 中医学习助手</div>
+      <div class="sb-title serif"><svg class="icon" aria-hidden="true"><use href="#i-leaf"/></svg> 中医学习助手</div>
     </div>
     <div class="sb-tabs">
-      <button class="sb-tab active" data-tab="chat">💬 对话</button>
-      <button class="sb-tab" data-tab="patient">📂 医案</button>
+      <button class="sb-tab active" data-tab="chat"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg> 对话</button>
+      <button class="sb-tab" data-tab="patient"><svg class="icon" aria-hidden="true"><use href="#i-folder"/></svg> 医案</button>
     </div>
     <!-- 对话 tab -->
     <div id="tabChat" class="sb-pane">
       <div style="padding:10px 12px 0;">
-        <button class="btn" style="width:100%;" id="newChatBtn">➕ 新建对话</button>
+        <button class="btn" style="width:100%;" id="newChatBtn"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> 新建对话</button>
       </div>
       <div class="sb-list" id="sessList"></div>
     </div>
     <!-- 医案 tab -->
     <div id="tabPatient" class="sb-pane" style="display:none;">
       <div style="padding:10px 12px 0;">
-        <button class="btn warm" style="width:100%;" id="newPatientBtn">➕ 新建患者</button>
+        <button class="btn warm" style="width:100%;" id="newPatientBtn"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> 新建患者</button>
       </div>
       <div class="sb-list" id="patientList"></div>
     </div>
@@ -813,7 +1379,7 @@ select:focus-visible,
         </div>
         <div class="quota-bar"><div class="quota-fill" id="quotaFill"></div></div>
       </div>
-      <button class="btn ghost" style="width:100%;" id="settingsBtn">⚙️ 设置</button>
+      <button class="btn ghost" style="width:100%;" id="settingsBtn"><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg> 设置</button>
     </div>
   </aside>
   <div class="backdrop" id="backdrop"></div>
@@ -821,22 +1387,22 @@ select:focus-visible,
   <!-- 主区 -->
   <main id="main">
     <div class="topbar">
-      <button class="icon-btn" id="menuBtn" title="菜单">☰</button>
+      <button class="icon-btn" id="menuBtn" title="菜单"><svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg></button>
       <div class="conv-title serif" id="convTitle">中医学习助手</div>
       <div class="model-switch" id="modelSwitch" title="切换模型">
         <span class="opt on" data-tier="pro">深度模式</span>
         <span class="opt flash" data-tier="flash">快速模式</span>
       </div>
-      <button class="icon-btn" id="sheetBtn" title="生成诊疗单">📋</button>
-      <button class="icon-btn" id="saveCaseBtn" title="存入医案">📥</button>
-      <button class="icon-btn" id="exportBtn" title="导出">⬇️</button>
+      <button class="icon-btn" id="sheetBtn" title="生成诊疗单"><svg class="icon" aria-hidden="true"><use href="#i-sheet"/></svg></button>
+      <button class="icon-btn" id="saveCaseBtn" title="存入医案"><svg class="icon" aria-hidden="true"><use href="#i-archive"/></svg></button>
+      <button class="icon-btn" id="exportBtn" title="导出"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg></button>
     </div>
 
     <div id="stream"></div>
 
-    <button class="icon-btn qn-toggle" id="qnToggle" title="导航" style="display:none;">🧭</button>
+    <button class="icon-btn qn-toggle" id="qnToggle" title="导航" style="display:none;"><svg class="icon" aria-hidden="true"><use href="#i-list"/></svg></button>
     <div id="quickNav" class="hidden">
-      <div class="qn-title">📍 我的提问</div>
+      <div class="qn-title"><svg class="icon" aria-hidden="true"><use href="#i-list"/></svg> 我的提问</div>
       <div id="qnList"></div>
     </div>
 
@@ -844,9 +1410,11 @@ select:focus-visible,
     <div class="composer">
       <div class="tpl-bar" id="tplBar"></div>
       <div class="composer-row2">
-        <button class="btn warm inquiry-btn" id="inquiryBtn">📋 问诊单</button>
-        <button class="btn ghost inquiry-btn" id="imgBtn">📷 图片</button>
+        <button class="btn warm inquiry-btn" id="inquiryBtn"><svg class="icon" aria-hidden="true"><use href="#i-sheet"/></svg> 问诊单</button>
+        <button class="btn ghost inquiry-btn" id="imgBtn"><svg class="icon" aria-hidden="true"><use href="#i-camera"/></svg> 图片</button>
         <input type="file" id="imgInput" accept="image/*" multiple style="display:none;">
+        <button class="btn ghost inquiry-btn" id="ocrBtn"><svg class="icon" aria-hidden="true"><use href="#i-scan-doc"/></svg> 拍录记录单</button>
+        <input type="file" id="ocrInput" accept="image/*" multiple style="display:none;">
         <div class="active-tpl-tag" id="activeTplTag" style="display:none;"></div>
       </div>
       <div class="img-staging" id="imgStaging" style="display:none;"></div>
@@ -863,9 +1431,9 @@ select:focus-visible,
   <div class="modal confirm-modal">
     <div class="modal-head"><h2>导出对话</h2><button class="close-x" data-close>×</button></div>
     <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
-      <button class="btn" id="doPrint">🖨️ 打印（A4 排版）</button>
-      <button class="btn ghost" id="doCopy">📋 复制全文</button>
-      <button class="btn ghost" id="doTxt">📄 下载 txt 文件</button>
+      <button class="btn" id="doPrint"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg> 打印（A4 排版）</button>
+      <button class="btn ghost" id="doCopy"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg> 复制全文</button>
+      <button class="btn ghost" id="doTxt"><svg class="icon" aria-hidden="true"><use href="#i-file-text"/></svg> 下载 txt 文件</button>
     </div>
   </div>
 </div>
@@ -873,11 +1441,26 @@ select:focus-visible,
 <!-- 问诊单 -->
 <div class="overlay" id="inquiryOverlay">
   <div class="modal modal-full">
-    <div class="modal-head"><h2>📋 问诊单</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-head"><h2><svg class="icon" aria-hidden="true"><use href="#i-sheet"/></svg> 问诊单</h2><button class="close-x" data-close>×</button></div>
     <div class="modal-body" id="inquiryBody"></div>
     <div class="modal-foot">
       <button class="btn ghost" data-close>取消</button>
       <button class="btn" id="genInquiry">生成问诊单 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- 拍录记录单：对照确认 -->
+<div class="overlay" id="ocrOverlay">
+  <div class="modal modal-full ocr-modal">
+    <div class="modal-head"><h2><svg class="icon" aria-hidden="true"><use href="#i-scan-doc"/></svg> 拍录记录单 · 对照核对</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-body" id="ocrBody">
+      <!-- 由 JS 渲染：上半原图 / 下半转录与核对 -->
+    </div>
+    <div class="modal-foot" id="ocrFoot" style="flex-wrap:wrap;gap:10px;">
+      <button class="btn ghost" data-close>取消</button>
+      <button class="btn ghost" id="ocrToInput"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg> 用作问诊信息</button>
+      <button class="btn" id="ocrToSheet"><svg class="icon" aria-hidden="true"><use href="#i-sheet"/></svg> 填入诊疗单</button>
     </div>
   </div>
 </div>
@@ -918,7 +1501,7 @@ select:focus-visible,
 <!-- 存入医案：起草 + 编辑 + 归属 -->
 <div class="overlay" id="saveCaseOverlay">
   <div class="modal modal-full">
-    <div class="modal-head"><h2>📥 存入医案</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-head"><h2><svg class="icon" aria-hidden="true"><use href="#i-archive"/></svg> 存入医案</h2><button class="close-x" data-close>×</button></div>
     <div class="modal-body" id="saveCaseBody"></div>
     <div class="modal-foot">
       <button class="btn ghost" data-close>取消</button>
@@ -930,13 +1513,13 @@ select:focus-visible,
 <!-- 诊疗单：生成 / 确认 / 打印 / 入档 -->
 <div class="overlay" id="sheetOverlay">
   <div class="modal modal-full">
-    <div class="modal-head"><h2>📋 诊疗单</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-head"><h2><svg class="icon" aria-hidden="true"><use href="#i-sheet"/></svg> 诊疗单</h2><button class="close-x" data-close>×</button></div>
     <div class="modal-body" id="sheetBody"></div>
     <div class="modal-foot" id="sheetFoot" style="flex-wrap:wrap;gap:10px;">
       <button class="btn ghost" data-close>取消</button>
-      <button class="btn ghost" id="sheetPrintDoc">🖨 打印医生版</button>
-      <button class="btn ghost" id="sheetPrintPat">🖨 打印病人版</button>
-      <button class="btn" id="sheetSave">📥 存入医案</button>
+      <button class="btn ghost" id="sheetPrintDoc"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg> 打印医生版</button>
+      <button class="btn ghost" id="sheetPrintPat"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg> 打印病人版</button>
+      <button class="btn" id="sheetSave"><svg class="icon" aria-hidden="true"><use href="#i-archive"/></svg> 存入医案</button>
     </div>
   </div>
 </div>
@@ -956,7 +1539,7 @@ select:focus-visible,
 <!-- 设置 -->
 <div class="overlay" id="settingsOverlay">
   <div class="modal modal-full">
-    <div class="modal-head"><h2>⚙️ 设置</h2><button class="close-x" data-close>×</button></div>
+    <div class="modal-head"><h2><svg class="icon" aria-hidden="true"><use href="#i-gear"/></svg> 设置</h2><button class="close-x" data-close>×</button></div>
     <div class="modal-body" id="settingsBody"></div>
     <div class="modal-foot">
       <button class="btn ghost" data-close>关闭</button>
@@ -1169,7 +1752,7 @@ const DEFAULT_SYSTEM = TEACHER_PERSONA +
 
 const TEMPLATES = [
   {
-    key:"tiaowen", icon:"📖", name:"条文学习",
+    key:"tiaowen", icon:"i-book", name:"条文学习",
     brief:"你问它讲：贴一条经典原文，它逐句给你讲透。",
     examples:["讲讲《伤寒论》第12条桂枝汤证，营卫不和怎么理解？","《金匮要略·痰饮咳嗽病》「病痰饮者，当以温药和之」这句怎么解？"],
     placeholder:"例如：讲讲《伤寒论》第12条桂枝汤证，营卫不和怎么理解？",
@@ -1178,7 +1761,7 @@ const TEMPLATES = [
       FIVE_RULES
   },
   {
-    key:"fangji", icon:"💊", name:"方剂解析",
+    key:"fangji", icon:"i-herb", name:"方剂解析",
     brief:"直接输入方名，它按 出处→君臣佐使→剂量→加减→禁忌 讲全套。",
     examples:["解析小柴胡汤的组方思路、君臣佐使与加减法。","真武汤"],
     placeholder:"例如：解析小柴胡汤的组方思路、君臣佐使与加减法。",
@@ -1187,16 +1770,16 @@ const TEMPLATES = [
       FIVE_RULES
   },
   {
-    key:"wenzhen", icon:"🩺", name:"问诊推演",
+    key:"wenzhen", icon:"i-stetho", name:"问诊推演",
     brief:"填好问诊单发给它，它做六经辨证推演。",
-    examples:["（点「📋 问诊单」整理好症状再发给它最省事）","患者恶寒发热、无汗、头项强痛、脉浮紧，该怎么辨？"],
+    examples:["（点「问诊单」整理好症状再发给它最省事）","患者恶寒发热、无汗、头项强痛、脉浮紧，该怎么辨？"],
     placeholder:"贴入问诊单内容，我来做六经辨证推演。",
     system: TEACHER_PERSONA +
       `\n本次任务是【问诊推演·六经辨证】，常配合"问诊单"使用，且往往是多轮滚动进行——学生可能先给一部分线索，之后逐轮补充。依据现有四诊信息推演：归纳主症与病机要点；判断病位（六经归属，表里寒热虚实）；给出当前信息下的辨证方向与立法思路。信息充分时据法选出主方并说明方证相应、结尾按约束④自查；信息尚不足以定方时，先给出初步辨证方向与2-3种可能性（按概率排序、各述依据），点明最关键的1-2个待问点，**不开具体处方但绝不拒绝分析**。学生补充信息后，更新判断并说明变化。` +
       FIVE_RULES
   },
   {
-    key:"jianbie", icon:"⚖️", name:"鉴别诊断",
+    key:"jianbie", icon:"i-scale", name:"鉴别诊断",
     brief:"两个像的证型/方子，它给你掰开揉碎对比。",
     examples:["太阳中风与太阳伤寒如何鉴别？","桂枝汤与麻黄汤怎么分？"],
     placeholder:"例如：太阳中风与太阳伤寒如何鉴别？桂枝汤与麻黄汤怎么分？",
@@ -1205,7 +1788,7 @@ const TEMPLATES = [
       FIVE_RULES
   },
   {
-    key:"zhenjiu", icon:"🧷", name:"针灸",
+    key:"zhenjiu", icon:"i-needle", name:"针灸",
     brief:"描述证候，它给选穴、手法、针感预期。",
     examples:["肝郁化火的失眠，针灸如何选穴、用什么手法？","胃寒疼痛，针灸怎么治？"],
     placeholder:"例如：肝郁化火的失眠，针灸如何选穴、用什么手法？",
@@ -1214,7 +1797,7 @@ const TEMPLATES = [
       FIVE_RULES
   },
   {
-    key:"yiyi", icon:"☯️", name:"医易结合",
+    key:"yiyi", icon:"i-yinyang", name:"医易结合",
     brief:"报卦象+症状，它把卦理和医理参着分析。",
     examples:["卦象水火既济，患者心烦失眠、腰膝酸软，怎么参？","起得风火家人卦，结合患者眩晕症状帮我分析。"],
     placeholder:"贴入卦象（如：水火既济 / 六爻）与症状，我来结合解读。",
@@ -1223,7 +1806,7 @@ const TEMPLATES = [
       FIVE_RULES
   },
   {
-    key:"ceyan", icon:"📝", name:"自我测验",
+    key:"ceyan", icon:"i-pen", name:"自我测验",
     brief:"它考你答：让它出题，你点选作答，它批改讲解。",
     examples:["给我出 3 道太阳病篇的辨证选择题。","出 3 道方剂君臣佐使的辨析题考考我。"],
     placeholder:"例如：给我出 3 道太阳病篇的辨证选择题。",
@@ -1232,7 +1815,7 @@ const TEMPLATES = [
       FIVE_RULES
   },
   {
-    key:"yian", icon:"🔍", name:"医案复盘",
+    key:"yian", icon:"i-search", name:"医案复盘",
     brief:"贴一则医案，它带你复盘得失。",
     examples:["（贴一则古案或今案，含症状、辨证、处方、转归）","复盘一下：患者服小柴胡汤三剂后寒热往来缓解但仍口苦，这案怎么看？"],
     placeholder:"贴入一则医案（症状/处方/转归），我们一起复盘。",
@@ -1268,7 +1851,7 @@ const API = (() => {
     const imgNote = hasImages ? `（已收到你上传的图片，演示模式下不做真实识别）\n\n` : ``;
     return `（演示模式：这是模拟回复，填入 API key 后将连接真实模型）\n\n` + imgNote +
       `我已收到你的问题：「${(userText||"").slice(0,40)}${(userText||"").length>40?"…":""}」。\n\n` +
-      `当前为**演示模式**，没有真正调用 Gemini。请到右下角「⚙️ 设置」里填入你的 API key（去 Google AI Studio 免费申请），保存后再发送消息，就能连接真实的经方派老师模型啦。\n\n` +
+      `当前为**演示模式**，没有真正调用 Gemini。请到右下角「设置」里填入你的 API key（去 Google AI Studio 免费申请），保存后再发送消息，就能连接真实的经方派老师模型啦。\n\n` +
       `> 提示：模型、月度额度、字号都可以在设置里调整。`;
   }
 
@@ -1570,7 +2153,7 @@ function errorToast(summary){
   try{
     const wrap=$("#errToastWrap"); if(!wrap) return;
     const el=document.createElement("div"); el.className="err-toast";
-    el.innerHTML='<div class="et-body"><div class="et-title">⚠️ 程序出错了</div>'+
+    el.innerHTML='<div class="et-body"><div class="et-title">⚠ 程序出错了</div>'+
       '<div>'+esc((summary||"未知错误").slice(0,200))+'</div></div>'+
       '<div class="et-x" title="关闭">×</div>';
     const remove=()=>{ if(el.parentNode) el.parentNode.removeChild(el); };
@@ -1782,13 +2365,13 @@ function buildQuizCard(q, msgId){
   const shortcuts = document.createElement("div");
   shortcuts.className = "qc-shortcuts";
   [
-    { emoji:"💡", label:"给点提示", text:"第"+qNum+"题给点提示" },
-    { emoji:"📖", label:"看原文",   text:"第"+qNum+"题看原文" },
-    { emoji:"✅", label:"直接看答案", text:"第"+qNum+"题直接看答案" }
+    { icon:"i-bulb",  label:"给点提示",   text:"第"+qNum+"题给点提示" },
+    { icon:"i-book",  label:"看原文",     text:"第"+qNum+"题看原文" },
+    { icon:"i-check", label:"直接看答案", text:"第"+qNum+"题直接看答案" }
   ].forEach(sc=>{
     const b = document.createElement("button");
     b.className = "qc-shortcut";
-    b.textContent = sc.emoji+" "+sc.label;
+    b.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#'+sc.icon+'"/></svg> '+sc.label;
     b.addEventListener("click", ()=> sendMessage(sc.text));
     shortcuts.appendChild(b);
   });
@@ -1840,7 +2423,7 @@ function renderAiContent(text, msgId){
         // 解析彻底失败：降级为代码块 + 警告
         const d = document.createElement("div");
         d.innerHTML = '<pre><code>'+esc(seg.raw)+'</code></pre>'+
-          '<div class="quiz-parse-warn">⚠️ 本题格式异常，请直接文字作答</div>';
+          '<div class="quiz-parse-warn">⚠ 本题格式异常，请直接文字作答</div>';
         frag.appendChild(d);
       }
     }
@@ -2045,7 +2628,7 @@ function renderStream(){
     errorToast("界面渲染出错："+((err&&err.message)||err));
     try{
       const stream=$("#stream");
-      if(stream) stream.innerHTML='<div class="empty-state"><div class="big">⚠️</div>'+
+      if(stream) stream.innerHTML='<div class="empty-state"><div class="big" style="font-size:56px;color:var(--warn);">⚠</div>'+
         '<h3 class="serif">界面渲染出错</h3>'+
         '<p>请刷新页面。数据已保存，不会丢失。</p></div>';
     }catch(_){}
@@ -2067,7 +2650,7 @@ function _renderStreamCore(){
     const pat = State.patients.find(p=>p.id===curSess.patientId);
     if(pat){
       const banner=document.createElement("div"); banner.className="pat-banner";
-      banner.textContent="📂 本对话关联患者："+pat.name+"（点击查看档案）";
+      banner.innerHTML='<svg class="icon"><use href="#i-folder"/></svg> 本对话关联患者：'+esc(pat.name)+'（点击查看档案）';
       banner.addEventListener("click", ()=> openPatientDetail(pat.id));
       stream.appendChild(banner);
     }
@@ -2115,7 +2698,7 @@ function renderMsgNode(m){
   }
   let acts = "";
   if(m.role==="user"){
-    acts = '<div class="msg-acts"><button data-act="edit">✏️ 修改并重新提问</button></div>';
+    acts = '<div class="msg-acts"><button data-act="edit"><svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg> 修改并重新提问</button></div>';
   }
 
   if(m.role==="ai" || m.role==="model"){
@@ -2154,15 +2737,15 @@ function renderMsgNode(m){
 
 function emptyStateHtml(){
   return '<div class="empty-state">'+
-    '<div class="big">🌿</div>'+
+    '<div class="big" style="font-size:56px;margin-bottom:14px;"><svg style="width:1em;height:1em;vertical-align:middle;stroke:var(--primary);fill:none;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><use href="#i-leaf"/></svg></div>'+
     '<h3 class="serif">您好，这里是中医学习助手</h3>'+
-    '<p>可以直接在下面输入框提问；也可以先点一个模板（如「条文学习」「方剂解析」），或用「📋 问诊单」整理症状。</p>'+
-    (State.settings && (!State.settings.keys || !State.settings.keys.length) ? '<p style="color:var(--accent);">当前为<strong>演示模式</strong>：先体验界面没问题，去「⚙️ 设置」填入 API key 后即可连接真实模型。</p>' : '')+
+    '<p>可以直接在下面输入框提问；也可以先点一个模板（如「条文学习」「方剂解析」），或用「问诊单」整理症状。</p>'+
+    (State.settings && (!State.settings.keys || !State.settings.keys.length) ? '<p style="color:var(--accent);">当前为<strong>演示模式</strong>：先体验界面没问题，去「设置」填入 API key 后即可连接真实模型。</p>' : '')+
     '<div class="empty-cards">'+
-      '<div class="empty-card" data-tpl="tiaowen">📖 条文学习</div>'+
-      '<div class="empty-card" data-tpl="fangji">💊 方剂解析</div>'+
-      '<div class="empty-card" data-tpl="wenzhen">🩺 问诊推演</div>'+
-      '<div class="empty-card" data-inq="1">📋 打开问诊单</div>'+
+      '<div class="empty-card" data-tpl="tiaowen"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg> 条文学习</div>'+
+      '<div class="empty-card" data-tpl="fangji"><svg class="icon" aria-hidden="true"><use href="#i-herb"/></svg> 方剂解析</div>'+
+      '<div class="empty-card" data-tpl="wenzhen"><svg class="icon" aria-hidden="true"><use href="#i-stetho"/></svg> 问诊推演</div>'+
+      '<div class="empty-card" data-inq="1"><svg class="icon" aria-hidden="true"><use href="#i-sheet"/></svg> 打开问诊单</div>'+
     '</div></div>';
 }
 function bindEmptyState(){
@@ -2214,7 +2797,7 @@ async function setActiveTemplate(key, persist){
   const tag = $("#activeTplTag");
   if(tpl){
     tag.style.display="flex";
-    tag.innerHTML = "已选模板："+tpl.icon+tpl.name+' <span class="x" title="取消模板">✕ 取消</span>';
+    tag.innerHTML = "已选模板："+tplIconHtml(tpl.icon)+" "+esc(tpl.name)+' <span class="x" title="取消模板">✕ 取消</span>';
     tag.querySelector(".x").onclick = ()=> setActiveTemplate(null, true);
     $("#inputBox").placeholder = tpl.placeholder;
   } else {
@@ -2300,9 +2883,13 @@ function buildApiContents(pathMsgs){
 const TPL_HFREQ = ["wenzhen","fangji","zhenjiu","yiyi"];
 const TPL_MORE  = ["tiaowen","jianbie","ceyan","yian"];
 
+function tplIconHtml(iconId){
+  return '<svg class="icon" aria-hidden="true"><use href="#'+iconId+'"/></svg>';
+}
 function makeTplBtn(t){
   const b = document.createElement("button");
-  b.className="tpl-btn"; b.dataset.key=t.key; b.textContent = t.icon+" "+t.name;
+  b.className="tpl-btn"; b.dataset.key=t.key;
+  b.innerHTML = tplIconHtml(t.icon)+" "+esc(t.name);
   b.addEventListener("click", ()=>{ closeTplMore(); openTemplateCard(t.key); });
   return b;
 }
@@ -2310,7 +2897,7 @@ function renderTemplateBar(){
   const bar = $("#tplBar"); bar.innerHTML="";
   // 第一个：自由对话（=无模板）
   const free=document.createElement("button");
-  free.className="tpl-btn free"; free.dataset.key="__free__"; free.textContent="💬 自由对话";
+  free.className="tpl-btn free"; free.dataset.key="__free__"; free.innerHTML=tplIconHtml("i-chat")+" 自由对话";
   free.addEventListener("click", async ()=>{
     if(!State.currentSessionId) await createSession();
     await setActiveTemplate(null, true);
@@ -2353,7 +2940,7 @@ function openTemplateCard(key){
   const t = TEMPLATES.find(x=>x.key===key); if(!t) return;
   const sess = State.currentSessionId ? State.sessions.find(s=>s.id===State.currentSessionId) : null;
   const isActive = sess && sess.templateKey===key;
-  $("#tplCardTitle").textContent = t.icon+" "+t.name;
+  $("#tplCardTitle").innerHTML = tplIconHtml(t.icon)+" "+esc(t.name);
   const body=$("#tplCardBody");
   let egHtml = (t.examples||[]).map((eg,i)=>'<button class="tpl-eg" data-eg="'+i+'">'+esc(eg)+'</button>').join("");
   const ov=State.settings.tplOverrides||{};
@@ -2365,7 +2952,7 @@ function openTemplateCard(key){
     egHtml+
     '<details class="tpl-card-full"><summary>查看完整指令</summary>'+
       '<div style="display:flex;gap:10px;margin:8px 0;flex-wrap:wrap;">'+
-        '<button class="btn ghost small" id="tplCardEdit">✏️ 编辑</button>'+
+        '<button class="btn ghost small" id="tplCardEdit"><svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg> 编辑</button>'+
         (customized?'<button class="btn ghost small" id="tplCardReset">↩ 恢复默认</button>':'')+
       '</div>'+
       '<pre>'+esc(effective)+'</pre></details>';
@@ -2587,9 +3174,9 @@ function renderErrorInBubble(aiEl, info, accText, onRetry){
   const partial = (info.kind==="aborted") ? (info.partial || accText || "") : "";
   if(partial){
     html += mdToHtml(partial);
-    html += '<div style="color:var(--warn);font-weight:600;margin-top:8px;">⚠️ 回答中断</div>';
+    html += '<div style="color:var(--warn);font-weight:600;margin-top:8px;">⚠ 回答中断</div>';
   } else {
-    html += '<div style="color:var(--danger);font-weight:600;">⚠️ '+esc(info.main)+'</div>';
+    html += '<div style="color:var(--danger);font-weight:600;">⚠ '+esc(info.main)+'</div>';
   }
   if(info.detail){
     html += '<div style="color:var(--ink-soft);font-size:var(--fs-sm);margin-top:6px;word-break:break-all;">详情：'+esc(info.detail)+'</div>';
@@ -2829,9 +3416,28 @@ const inquiryState = {
   custom:{},                // id -> [自定义项]，含 chips 各组 与 各脉象位置
   pulseOverall:[],          // 整体脉象（内置）
   pulseDetailOpen:false,
-  pulseDetail:{},           // posId -> [脉象]
+  pulseDetail:{},           // posId -> [脉象]（旧版，保留兼容）
+  // 新版脉诊矩阵：posId -> { fu:[], zhong:[], chen:[], fu_cus:[], zhong_cus:[], chen_cus:[] }
+  pulseMatrix:{},
+  // 趺阳/太溪附加脉象
+  pulseExtra:{ fuyang:[], fuyang_cus:[], taixi:[], taixi_cus:[] },
   jiwang:"",                // 既往史与用药
-  zhiliao:""                // 已做治疗及反应
+  zhiliao:"",               // 已做治疗及反应
+  // 舌诊分区（展开开关 + 各区数据）
+  tongueZoneOpen:false,
+  tongueZone:{
+    // zoneId -> { color:string, degree:string, patho:[], patho_cus:[], color_cus:[] }
+    // zoneId: tip / mid / left / right / root / sub
+  },
+  // 腹诊（展开开关 + 各穴位数据 + 自定义穴）
+  abdOpen:false,
+  abd:{
+    // key -> { grade:0, quality:[], quality_cus:[] }
+    // key: 穴位id（单侧如"zhongwan"）或 侧别id（如"tianshu_L"）
+  },
+  abdCustom:[
+    // { id, name, pos, grade, quality:[], quality_cus:[] }
+  ]
 };
 
 function todayISO(){
@@ -2856,7 +3462,7 @@ function makeChipGroup(options, selArr, customArr, groupKey){
   });
 
   // 「✏️ 自填」按钮（先 append，后面自定义 chip 都 insertBefore 它）
-  const add=document.createElement("button"); add.className="chip add-chip"; add.textContent="✏️ 自填";
+  const add=document.createElement("button"); add.className="chip add-chip"; add.innerHTML='<svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg> 自填';
   group.appendChild(add);
 
   // 已选的自定义项（来自 inquiryState，本次已点选过的），插在 add 之前
@@ -2940,6 +3546,1478 @@ function makeCustomChip(val, customArr, group){
 
 function ensureArr(obj, key){ if(!Array.isArray(obj[key])) obj[key]=[]; return obj[key]; }
 
+/* ============================================================
+ * 脉诊矩阵（六部 × 三候 × N脉象）
+ * ============================================================ */
+
+// 六部配置：id / 显示名 / 脏腑提示
+const PULSE_MATRIX_LEFT = [
+  { id:"l_cun",  name:"寸", organ:"心" },
+  { id:"l_guan", name:"关", organ:"肝胆" },
+  { id:"l_chi",  name:"尺", organ:"肾水" }
+];
+const PULSE_MATRIX_RIGHT = [
+  { id:"r_cun",  name:"寸", organ:"肺" },
+  { id:"r_guan", name:"关", organ:"脾胃" },
+  { id:"r_chi",  name:"尺", organ:"命门" }
+];
+
+// 候位名映射
+const LEVEL_KEYS  = ["fu","zhong","chen"];
+const LEVEL_NAMES = { fu:"浮", zhong:"中", chen:"沉" };
+// 脉象候选（含「无」）
+const PULSE_CHIPS_FULL = ["浮","沉","迟","数","弦","滑","细","弱","涩","濡","洪","紧","结","代","促","无"];
+
+// 确保某个矩阵位的结构存在
+function ensurePosMatrix(S, posId){
+  if(!S.pulseMatrix[posId]){
+    S.pulseMatrix[posId]={ fu:[], zhong:[], chen:[], fu_cus:[], zhong_cus:[], chen_cus:[] };
+  }
+  return S.pulseMatrix[posId];
+}
+
+// 获取某候位的已选数组（内置 + 自定义合并摘要）
+function getPosLevelChips(posData, lvKey){
+  return [].concat(posData[lvKey]||[], posData[lvKey+"_cus"]||[]);
+}
+
+// 构建单个候位的脉象选择面板（浮/中/沉之一）
+// posData: 状态对象；lvKey: "fu"|"zhong"|"chen"；groupKey: DB 持久化 key
+// onUpdate: 选择变化后的回调（刷新候位按钮角标）
+function makeLevelPanel(posData, lvKey, groupKey, onUpdate){
+  const panel = document.createElement("div");
+  panel.className = "pm-panel";
+
+  const title = document.createElement("div");
+  title.className = "pm-panel-title";
+  title.textContent = LEVEL_NAMES[lvKey] + "取脉象（可多选）";
+  panel.appendChild(title);
+
+  const selArr    = ensureArr(posData, lvKey);
+  const customArr = ensureArr(posData, lvKey+"_cus");
+
+  // 构建 chip 列表（内置含「无」，加自填）
+  const chipGroup = document.createElement("div");
+  chipGroup.className = "chip-group";
+
+  function toggleNone(opt, btn){
+    if(opt === "无"){
+      // 选「无」→ 清其他，自定义也清
+      selArr.length = 0;
+      customArr.length = 0;
+      selArr.push("无");
+      // 刷新全部 chip 的 .on 态
+      chipGroup.querySelectorAll(".chip:not(.add-chip)").forEach(b=>{
+        b.classList.toggle("on", b.dataset.opt === "无");
+      });
+    } else {
+      // 选其他 → 若「无」在里面，去掉
+      const niIdx = selArr.indexOf("无");
+      if(niIdx >= 0) selArr.splice(niIdx, 1);
+      const idx = selArr.indexOf(opt);
+      if(idx >= 0){ selArr.splice(idx, 1); btn.classList.remove("on"); }
+      else { selArr.push(opt); btn.classList.add("on"); }
+      // 刷新「无」chip 的 .on 态
+      chipGroup.querySelectorAll(".chip:not(.add-chip)").forEach(b=>{
+        if(b.dataset.opt === "无") b.classList.toggle("on", selArr.includes("无"));
+      });
+    }
+    onUpdate();
+  }
+
+  PULSE_CHIPS_FULL.forEach(opt=>{
+    const c = document.createElement("button");
+    c.className = "chip";
+    c.dataset.opt = opt;
+    c.textContent = opt;
+    if(selArr.includes(opt)) c.classList.add("on");
+    c.addEventListener("click", ()=> toggleNone(opt, c));
+    chipGroup.appendChild(c);
+  });
+
+  // 自填
+  const addBtn = document.createElement("button");
+  addBtn.className = "chip add-chip";
+  addBtn.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg> 自填';
+  chipGroup.appendChild(addBtn);
+
+  // 已选自定义项
+  customArr.forEach(val => chipGroup.insertBefore(
+    makeCustomLevelChip(val, posData, lvKey, groupKey, true, onUpdate), addBtn
+  ));
+  // 历史自定义
+  if(groupKey){
+    const hist = getCustomChipOptions(groupKey).filter(t=> !customArr.includes(t));
+    hist.forEach(val => chipGroup.insertBefore(
+      makeCustomLevelChip(val, posData, lvKey, groupKey, false, onUpdate), addBtn
+    ));
+  }
+
+  addBtn.addEventListener("click", ()=>{
+    const inp = document.createElement("input");
+    inp.className = "chip-inline-input";
+    inp.placeholder = "输入后回车";
+    chipGroup.insertBefore(inp, addBtn);
+    inp.focus();
+    const commit = async ()=>{
+      const v = (inp.value||"").trim(); inp.remove();
+      if(!v) return;
+      // 若「无」在 → 先清
+      const niIdx = selArr.indexOf("无");
+      if(niIdx >= 0) selArr.splice(niIdx, 1);
+      if(!customArr.includes(v)){
+        customArr.push(v);
+        if(groupKey) await addCustomChip(groupKey, v);
+        chipGroup.insertBefore(
+          makeCustomLevelChip(v, posData, lvKey, groupKey, true, onUpdate), addBtn
+        );
+      }
+      onUpdate();
+    };
+    inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); commit(); } else if(e.key==="Escape"){ inp.remove(); } });
+    inp.addEventListener("blur", commit);
+  });
+
+  panel.appendChild(chipGroup);
+  return panel;
+}
+
+// 自定义候位 chip（可删，可切换选中）
+function makeCustomLevelChip(val, posData, lvKey, groupKey, startSelected, onUpdate){
+  const selArr = posData[lvKey] || [];
+  const customArr = posData[lvKey+"_cus"] || [];
+  const c = document.createElement("button");
+  c.className = "chip custom" + (startSelected ? " on" : "");
+  const textSpan = document.createElement("span"); textSpan.textContent = val;
+  const delX = document.createElement("span"); delX.className = "chip-del-x"; delX.textContent = "×";
+  c.appendChild(textSpan); c.appendChild(delX);
+  textSpan.addEventListener("click", e=>{
+    e.stopPropagation();
+    // 若「无」在 selArr → 清除
+    const niIdx = selArr.indexOf("无");
+    if(niIdx >= 0) selArr.splice(niIdx, 1);
+    if(customArr.includes(val)){
+      const i = customArr.indexOf(val); customArr.splice(i, 1); c.classList.remove("on");
+    } else {
+      customArr.push(val); c.classList.add("on");
+      if(groupKey) addCustomChip(groupKey, val);
+    }
+    onUpdate();
+  });
+  delX.addEventListener("click", async e=>{
+    e.stopPropagation();
+    const i = customArr.indexOf(val); if(i >= 0) customArr.splice(i, 1);
+    if(groupKey) await removeCustomChip(groupKey, val);
+    c.remove();
+    onUpdate();
+  });
+  let _lp = null;
+  c.addEventListener("pointerdown", ()=>{ _lp = setTimeout(async ()=>{
+    const i = customArr.indexOf(val); if(i >= 0) customArr.splice(i, 1);
+    if(groupKey) await removeCustomChip(groupKey, val);
+    c.remove(); onUpdate();
+  }, 700); });
+  c.addEventListener("pointerup", ()=> clearTimeout(_lp));
+  c.addEventListener("pointercancel", ()=> clearTimeout(_lp));
+  return c;
+}
+
+// 构建一列手（左或右）的 DOM
+function buildHandColumn(handTitle, positions, S){
+  const col = document.createElement("div");
+  col.className = "pm-hand";
+
+  const titleEl = document.createElement("div");
+  titleEl.className = "pm-hand-title";
+  titleEl.textContent = handTitle;
+  col.appendChild(titleEl);
+
+  positions.forEach(pos=>{
+    const posData = ensurePosMatrix(S, pos.id);
+    const row = document.createElement("div");
+    row.className = "pm-row";
+
+    // 内层横向布局（行头 + 三候按钮）
+    const inner = document.createElement("div");
+    inner.className = "pm-row-inner";
+
+    // 行头
+    const head = document.createElement("div");
+    head.className = "pm-row-head";
+    const nameEl = document.createElement("span"); nameEl.className = "rh-name"; nameEl.textContent = pos.name;
+    const organEl = document.createElement("span"); organEl.className = "rh-organ"; organEl.textContent = pos.organ;
+    head.appendChild(nameEl); head.appendChild(organEl);
+    inner.appendChild(head);
+
+    // 三候位
+    const levelsDiv = document.createElement("div");
+    levelsDiv.className = "pm-levels";
+
+    // 当前打开的 panel 跟踪（同一行只开一个）
+    let activePanel = null;
+    let activeLvlBtn = null;
+
+    LEVEL_KEYS.forEach(lvKey=>{
+      const groupKey = "pulse_" + pos.id + "_" + lvKey;
+      const lvlBtn = document.createElement("div");
+      lvlBtn.className = "pm-lvl";
+      lvlBtn.setAttribute("role","button");
+      lvlBtn.setAttribute("tabindex","0");
+
+      const nameSp = document.createElement("span"); nameSp.className = "lvl-name"; nameSp.textContent = LEVEL_NAMES[lvKey];
+      const badge  = document.createElement("span"); badge.className = "lvl-badge";
+      lvlBtn.appendChild(nameSp); lvlBtn.appendChild(badge);
+
+      const panel = makeLevelPanel(posData, lvKey, groupKey, ()=>{
+        refreshLvlBtn(lvlBtn, badge, posData, lvKey);
+      });
+      // panel 作为 row 的子（行内展开，不绝对定位）
+      row.appendChild(panel);
+
+      function refreshLvlBtn(btn, bdg, pd, lk){
+        const chips = getPosLevelChips(pd, lk);
+        if(chips.length){
+          btn.classList.add("pm-has-data");
+          bdg.textContent = chips.slice(0,3).join(" ");
+        } else {
+          btn.classList.remove("pm-has-data");
+          bdg.textContent = "";
+        }
+      }
+      refreshLvlBtn(lvlBtn, badge, posData, lvKey);
+
+      lvlBtn.addEventListener("click", ()=>{
+        const isOpen = panel.classList.contains("open");
+        // 关闭同行其他
+        if(activePanel && activePanel !== panel){ activePanel.classList.remove("open"); if(activeLvlBtn) activeLvlBtn.classList.remove("pm-open"); }
+        if(isOpen){
+          panel.classList.remove("open");
+          lvlBtn.classList.remove("pm-open");
+          activePanel = null; activeLvlBtn = null;
+        } else {
+          panel.classList.add("open");
+          lvlBtn.classList.add("pm-open");
+          activePanel = panel; activeLvlBtn = lvlBtn;
+        }
+      });
+      lvlBtn.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); lvlBtn.click(); } });
+
+      levelsDiv.appendChild(lvlBtn);
+    });
+
+    inner.appendChild(levelsDiv);
+    row.insertBefore(inner, row.firstChild); // inner 在最前，panels 在其后
+    col.appendChild(row);
+  });
+
+  return col;
+}
+
+// 构建趺阳/太溪附加脉位
+function buildExtraPulse(S){
+  const wrap = document.createElement("div");
+  wrap.className = "pm-extra";
+
+  [
+    { key:"fuyang", label:"趺阳脉", hint:"胃气" },
+    { key:"taixi",  label:"太溪脉", hint:"肾气" }
+  ].forEach(item=>{
+    const box = document.createElement("div");
+    box.className = "pm-extra-item";
+
+    const titleEl = document.createElement("div");
+    titleEl.className = "pm-extra-title";
+    const nameSpan = document.createElement("span"); nameSpan.textContent = item.label + "（" + item.hint + "）";
+    const badge = document.createElement("span"); badge.className = "ext-badge";
+    titleEl.appendChild(nameSpan); titleEl.appendChild(badge);
+    box.appendChild(titleEl);
+
+    const chipsWrap = document.createElement("div");
+    chipsWrap.className = "pm-extra-chips";
+    const selArr    = ensureArr(S.pulseExtra, item.key);
+    const customArr = ensureArr(S.pulseExtra, item.key+"_cus");
+    const groupKey  = "pulse_extra_" + item.key;
+
+    function refreshBadge(){
+      const all = [].concat(selArr, customArr).filter(Boolean);
+      badge.textContent = all.length ? "已选：" + all.join("、") : "";
+    }
+    refreshBadge();
+
+    // 内置 chips
+    const cg = document.createElement("div"); cg.className = "chip-group";
+    PULSE_CHIPS_FULL.forEach(opt=>{
+      const c = document.createElement("button"); c.className = "chip"; c.dataset.opt = opt; c.textContent = opt;
+      if(selArr.includes(opt)) c.classList.add("on");
+      c.addEventListener("click", ()=>{
+        if(opt === "无"){
+          selArr.length = 0; customArr.length = 0; selArr.push("无");
+          cg.querySelectorAll(".chip:not(.add-chip)").forEach(b=> b.classList.toggle("on", b.dataset.opt==="无"));
+        } else {
+          const niIdx = selArr.indexOf("无"); if(niIdx>=0) selArr.splice(niIdx,1);
+          const idx = selArr.indexOf(opt);
+          if(idx>=0){ selArr.splice(idx,1); c.classList.remove("on"); }
+          else { selArr.push(opt); c.classList.add("on"); }
+          cg.querySelectorAll(".chip:not(.add-chip)").forEach(b=>{ if(b.dataset.opt==="无") b.classList.toggle("on",selArr.includes("无")); });
+        }
+        refreshBadge();
+      });
+      cg.appendChild(c);
+    });
+    // 自填
+    const addBtn2 = document.createElement("button"); addBtn2.className = "chip add-chip";
+    addBtn2.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg> 自填';
+    cg.appendChild(addBtn2);
+    customArr.forEach(val => cg.insertBefore(
+      makePersistCustomChip(val, customArr, cg, groupKey, true), addBtn2
+    ));
+    if(groupKey){
+      const hist2 = getCustomChipOptions(groupKey).filter(t=> !customArr.includes(t));
+      hist2.forEach(val => cg.insertBefore(makePersistCustomChip(val, customArr, cg, groupKey, false), addBtn2));
+    }
+    addBtn2.addEventListener("click", ()=>{
+      const inp = document.createElement("input"); inp.className = "chip-inline-input"; inp.placeholder = "输入后回车";
+      cg.insertBefore(inp, addBtn2); inp.focus();
+      const commit2 = async ()=>{
+        const v = (inp.value||"").trim(); inp.remove(); if(!v) return;
+        const niIdx = selArr.indexOf("无"); if(niIdx>=0) selArr.splice(niIdx,1);
+        if(!customArr.includes(v)){
+          customArr.push(v);
+          if(groupKey) await addCustomChip(groupKey, v);
+          cg.insertBefore(makePersistCustomChip(v, customArr, cg, groupKey, true), addBtn2);
+        }
+        refreshBadge();
+      };
+      inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); commit2(); } else if(e.key==="Escape"){ inp.remove(); } });
+      inp.addEventListener("blur", commit2);
+    });
+    chipsWrap.appendChild(cg);
+    box.appendChild(chipsWrap);
+    wrap.appendChild(box);
+  });
+
+  return wrap;
+}
+
+// 关闭所有已打开的候位面板（点击外部时调用）
+function closeAllPulsePanels(){
+  document.querySelectorAll(".pm-panel.open").forEach(p=> p.classList.remove("open"));
+  document.querySelectorAll(".pm-lvl.pm-open").forEach(b=> b.classList.remove("pm-open"));
+}
+
+// 生成脉诊矩阵的文本段（六部 + 趺阳/太溪）
+function composePulseMatrixText(S){
+  const lines = [];
+  const allPositions = [
+    ...PULSE_MATRIX_LEFT.map(p=>({ ...p, hand:"左" })),
+    ...PULSE_MATRIX_RIGHT.map(p=>({ ...p, hand:"右" }))
+  ];
+  allPositions.forEach(pos=>{
+    const pd = S.pulseMatrix[pos.id];
+    if(!pd) return;
+    const parts = [];
+    LEVEL_KEYS.forEach(lk=>{
+      const chips = getPosLevelChips(pd, lk);
+      if(chips.length) parts.push(LEVEL_NAMES[lk] + "取" + chips.join(""));
+    });
+    if(parts.length) lines.push(pos.hand + pos.name + "：" + parts.join("，"));
+  });
+  // 趺阳/太溪
+  ["fuyang","taixi"].forEach(key=>{
+    const pe = S.pulseExtra;
+    if(!pe) return;
+    const chips = [].concat(pe[key]||[], pe[key+"_cus"]||[]).filter(Boolean);
+    if(chips.length){
+      const label = key==="fuyang" ? "趺阳" : "太溪";
+      lines.push(label + "：" + chips.join("、"));
+    }
+  });
+  return lines;
+}
+
+/* ============================================================
+ * 舌诊分区组件
+ * ============================================================ */
+
+// 分区配置：id / 显示名 / 脏腑提示 / SVG 路径（后面 buildTongueSVG 里用）
+const TONGUE_ZONES = [
+  { id:"tip",   name:"尖",  organ:"心肺", labelX:140, labelY:262 },
+  { id:"mid",   name:"中",  organ:"脾胃", labelX:140, labelY:180 },
+  { id:"left",  name:"左边",organ:"肝胆", labelX:78,  labelY:175 },
+  { id:"right", name:"右边",organ:"肝胆", labelX:202, labelY:175 },
+  { id:"root",  name:"根",  organ:"肾",   labelX:140, labelY:82  }
+];
+
+// 舌质颜色候选
+const TONGUE_COLORS = ["淡白","淡红","红","绛","紫","暗","青"];
+// 病理特征候选
+const TONGUE_PATHO  = ["瘀斑","裂纹","齿痕","芒刺","剥苔","点刺"];
+// 舌下络脉候选
+const TONGUE_SUB_CHIPS = ["正常","迂曲","怒张","紫暗"];
+
+// 确保某分区状态对象存在
+function ensureTongueZone(S, zoneId){
+  if(!S.tongueZone) S.tongueZone = {};
+  if(!S.tongueZone[zoneId]){
+    S.tongueZone[zoneId] = { color:"", degree:"", patho:[], patho_cus:[], color_cus:[] };
+  }
+  return S.tongueZone[zoneId];
+}
+
+// 某分区是否有任何数据
+function tongueZoneHasData(zd){
+  if(!zd) return false;
+  return !!(zd.color || zd.color_cus.length || zd.patho.length || zd.patho_cus.length);
+}
+
+// 构建舌形 SVG（宽 280px 竖向，5个可点击区域）
+// onZoneClick(zoneId) 回调由外部传入
+function buildTongueSVG(S, onZoneClick){
+  const wrap = document.createElement("div");
+  wrap.className = "tcm-zonemap";
+  wrap.style.width = "220px";
+
+  // SVG 坐标系：280×320，舌形从上到下：舌根→舌中→舌尖
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS,"svg");
+  svg.setAttribute("viewBox","0 0 280 320");
+  svg.setAttribute("xmlns",svgNS);
+  svg.setAttribute("role","img");
+  svg.setAttribute("aria-label","舌诊分区图");
+
+  // 舌诊分区路径（viewBox 0 0 280 310）
+  // 外轮廓：顶部宽（y≈20），向下收窄，底部圆弧（y≈295）
+  // 分区设计（无重叠 5 块）：
+  //   root（根/肾）  ← 顶部横带 y:20~105，与外轮廓相交
+  //   left（左边/肝胆）← 中段左侧竖条 y:105~235, x:轮廓左缘~106
+  //   mid（中/脾胃） ← 中段中心竖条 y:105~235, x:106~174
+  //   right（右边/肝胆）← 中段右侧竖条 y:105~235, x:174~轮廓右缘
+  //   tip（尖/心肺） ← 底部圆帽 y:235~295
+  //
+  // 外轮廓近似（Bézier）：
+  //   M140,20 C108,20 74,50 60,90 C46,130 48,178 60,218 C72,252 104,280 140,284 C176,280 208,252 220,218 C232,178 234,130 220,90 C206,50 172,20 140,20 Z
+  //
+  // 分区共享边：
+  //   水平线 y=105：将 root 与中间区隔开
+  //   水平线 y=235：将中间区与 tip 隔开
+  //   垂直线 x=106, x=174：将中间区切为三列
+
+  // 各分区路径（在外轮廓内）
+  const zoneDefs = [
+    // root：顶部横带（轮廓上段 + 水平线 y=105）
+    { id:"root",
+      d:"M140,20 C108,20 74,50 60,90 C52,108 50,105 50,105 L230,105 C230,105 228,108 220,90 C206,50 172,20 140,20 Z" },
+    // left：中段左侧竖条
+    { id:"left",
+      d:"M50,105 L106,105 L106,235 C86,232 68,224 58,212 C50,198 48,178 50,158 L50,105 Z" },
+    // mid：中段中央矩形
+    { id:"mid",
+      d:"M106,105 L174,105 L174,235 L106,235 Z" },
+    // right：中段右侧竖条（left 镜像）
+    { id:"right",
+      d:"M230,105 L174,105 L174,235 C194,232 212,224 222,212 C230,198 232,178 230,158 L230,105 Z" },
+    // tip：底部圆帽（y=235 以下）
+    { id:"tip",
+      d:"M50,158 C48,178 50,198 58,212 C68,224 86,232 106,235 L174,235 C194,232 212,224 222,212 C230,198 232,178 230,158 C230,196 224,232 208,254 C192,276 168,292 140,295 C112,292 88,276 72,254 C56,232 50,196 50,158 Z" }
+  ];
+
+  // 外轮廓（仅描边，无填充，覆盖在分区之上）
+  const outline = document.createElementNS(svgNS,"path");
+  outline.setAttribute("d","M140,20 C108,20 74,50 60,90 C46,130 48,178 60,218 C72,252 104,280 140,284 C176,280 208,252 220,218 C232,178 234,130 220,90 C206,50 172,20 140,20 Z");
+  outline.setAttribute("fill","none");
+  outline.setAttribute("stroke","var(--ink-soft)");
+  outline.setAttribute("stroke-width","1.5");
+  outline.style.pointerEvents = "none";
+
+  const zonePaths2 = {};
+  zoneDefs.forEach(def=>{
+    const pathEl = document.createElementNS(svgNS,"path");
+    pathEl.setAttribute("d", def.d);
+    pathEl.setAttribute("class","tcm-zone");
+    pathEl.setAttribute("role","button");
+    pathEl.setAttribute("tabindex","0");
+    pathEl.dataset.zone = def.id;
+
+    // 初始状态
+    const zd = S.tongueZone && S.tongueZone[def.id];
+    if(tongueZoneHasData(zd)) pathEl.classList.add("sd-has-data");
+
+    pathEl.addEventListener("click", ()=> onZoneClick(def.id));
+    pathEl.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); onZoneClick(def.id); } });
+    svg.appendChild(pathEl);
+    zonePaths2[def.id] = pathEl;
+
+    // 标签
+    const ld = labelDefs[def.id];
+    const txt = document.createElementNS(svgNS,"text");
+    txt.setAttribute("x", ld.x);
+    txt.setAttribute("y", ld.y - 7);
+    txt.setAttribute("class","tcm-zone-label");
+    txt.setAttribute("font-size","11");
+    txt.textContent = ld.line1;
+    svg.appendChild(txt);
+    const txt2 = document.createElementNS(svgNS,"text");
+    txt2.setAttribute("x", ld.x);
+    txt2.setAttribute("y", ld.y + 7);
+    txt2.setAttribute("class","tcm-zone-label");
+    txt2.setAttribute("font-size","9");
+    txt2.textContent = ld.line2;
+    svg.appendChild(txt2);
+  });
+
+  wrap.appendChild(svg);
+  wrap._zonePaths = zonePaths2;
+  return wrap;
+}
+
+// 构建舌下独立小图
+function buildSublingualSVG(S, onZoneClick){
+  const wrap = document.createElement("div");
+  wrap.className = "sd-sublingual-wrap";
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS,"svg");
+  svg.setAttribute("viewBox","0 0 80 54");
+  svg.setAttribute("xmlns",svgNS);
+  svg.style.width = "70px";
+
+  const ellipse = document.createElementNS(svgNS,"ellipse");
+  ellipse.setAttribute("cx","40");
+  ellipse.setAttribute("cy","27");
+  ellipse.setAttribute("rx","34");
+  ellipse.setAttribute("ry","22");
+  ellipse.setAttribute("class","tcm-zone");
+  ellipse.setAttribute("role","button");
+  ellipse.setAttribute("tabindex","0");
+  ellipse.dataset.zone = "sub";
+
+  const zd = S.tongueZone && S.tongueZone["sub"];
+  if(tongueZoneHasData(zd)) ellipse.classList.add("sd-has-data");
+  ellipse.addEventListener("click", ()=> onZoneClick("sub"));
+  ellipse.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); onZoneClick("sub"); } });
+  svg.appendChild(ellipse);
+
+  const txt = document.createElementNS(svgNS,"text");
+  txt.setAttribute("x","40"); txt.setAttribute("y","24");
+  txt.setAttribute("class","tcm-zone-label"); txt.setAttribute("font-size","10");
+  txt.textContent = "舌下";
+  svg.appendChild(txt);
+  const txt2 = document.createElementNS(svgNS,"text");
+  txt2.setAttribute("x","40"); txt2.setAttribute("y","37");
+  txt2.setAttribute("class","tcm-zone-label"); txt2.setAttribute("font-size","8");
+  txt2.textContent = "络脉";
+  svg.appendChild(txt2);
+
+  wrap.appendChild(svg);
+  const lbl = document.createElement("div");
+  lbl.className = "sd-sublingual-label"; lbl.textContent = "舌下";
+  wrap.appendChild(lbl);
+
+  wrap._ellipse = ellipse;
+  return wrap;
+}
+
+// 构建单个分区的面板（颜色 + 程度 + 病理）
+// zoneId: tip/mid/left/right/root → 正常分区；"sub" → 舌下络脉
+function buildZonePanel(S, zoneId, onDataChange){
+  const isSub = zoneId === "sub";
+  const zd = ensureTongueZone(S, zoneId);
+
+  const panel = document.createElement("div");
+  panel.className = "sd-zone-panel";
+  panel.dataset.panelFor = zoneId;
+
+  // 面板标题
+  const head = document.createElement("div");
+  head.className = "sd-panel-head";
+  const zoneNames = { tip:"舌尖（心肺区）", mid:"舌中（脾胃区）", left:"左舌边（肝胆区）",
+                      right:"右舌边（肝胆区）", root:"舌根（肾区）", sub:"舌下（络脉）" };
+  head.textContent = zoneNames[zoneId] || zoneId;
+  panel.appendChild(head);
+
+  const body2 = document.createElement("div");
+  body2.className = "sd-panel-body";
+
+  if(isSub){
+    // 舌下：络脉 chips
+    const lbl = document.createElement("div"); lbl.className = "sd-sub-label"; lbl.textContent = "络脉状态（可多选）";
+    body2.appendChild(lbl);
+    const selArr    = ensureArr(zd, "patho");
+    const customArr = ensureArr(zd, "patho_cus");
+    const groupKey  = "tongue_sub_veins";
+    const cg = makeChipGroup(TONGUE_SUB_CHIPS, selArr, customArr, groupKey);
+    // 监听选择变化
+    cg.querySelectorAll(".chip:not(.add-chip)").forEach(c=>{
+      c.addEventListener("click", onDataChange);
+    });
+    body2.appendChild(cg);
+  } else {
+    // 舌质颜色
+    const colorLbl = document.createElement("div"); colorLbl.className = "sd-sub-label"; colorLbl.textContent = "舌质颜色";
+    body2.appendChild(colorLbl);
+
+    const colorGroup = document.createElement("div"); colorGroup.className = "chip-group";
+
+    // 程度选择区（初始隐藏）
+    const degWrap = document.createElement("div"); degWrap.className = "sd-degree-wrap";
+    const degLbl2 = document.createElement("div"); degLbl2.className = "sd-sub-label"; degLbl2.textContent = "程度";
+    degWrap.appendChild(degLbl2);
+    const degRow = document.createElement("div"); degRow.className = "sd-degree-row";
+    ["浅","中","深"].forEach(deg=>{
+      const db = document.createElement("button");
+      db.className = "sd-degree-btn"; db.textContent = deg; db.dataset.deg = deg;
+      if(zd.degree === deg) db.classList.add("is-selected");
+      db.addEventListener("click",()=>{
+        if(zd.degree === deg){ zd.degree = ""; db.classList.remove("is-selected"); }
+        else {
+          zd.degree = deg;
+          degRow.querySelectorAll(".sd-degree-btn").forEach(b=> b.classList.remove("is-selected"));
+          db.classList.add("is-selected");
+        }
+        onDataChange();
+      });
+      degRow.appendChild(db);
+    });
+    degWrap.appendChild(degRow);
+
+    // 颜色 chips（单选）
+    const selColor = zd.color || "";
+    const colorCustomArr = ensureArr(zd, "color_cus");
+    const groupKeyColor = "tongue_color_" + zoneId;
+
+    function pickColor(opt, btn){
+      if(zd.color === opt){
+        zd.color = ""; btn.classList.remove("on");
+        degWrap.classList.remove("visible");
+      } else {
+        zd.color = opt;
+        colorGroup.querySelectorAll(".chip:not(.add-chip)").forEach(b=> b.classList.remove("on"));
+        btn.classList.add("on");
+        degWrap.classList.add("visible");
+      }
+      onDataChange();
+    }
+
+    TONGUE_COLORS.forEach(opt=>{
+      const c = document.createElement("button"); c.className = "chip"; c.dataset.opt = opt; c.textContent = opt;
+      if(selColor === opt) c.classList.add("on");
+      c.addEventListener("click", ()=> pickColor(opt, c));
+      colorGroup.appendChild(c);
+    });
+
+    // 自填颜色
+    const addColorBtn = document.createElement("button");
+    addColorBtn.className = "chip add-chip";
+    addColorBtn.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg> 自填';
+    colorGroup.appendChild(addColorBtn);
+
+    // 已选自定义颜色
+    colorCustomArr.forEach(val=>{
+      colorGroup.insertBefore(
+        makeCustomColorChip(val, zd, colorGroup, groupKeyColor, colorCustomArr.includes(val), pickColor, onDataChange),
+        addColorBtn
+      );
+    });
+    if(groupKeyColor){
+      const hist = getCustomChipOptions(groupKeyColor).filter(t=> !colorCustomArr.includes(t));
+      hist.forEach(val=>{
+        colorGroup.insertBefore(
+          makeCustomColorChip(val, zd, colorGroup, groupKeyColor, false, pickColor, onDataChange),
+          addColorBtn
+        );
+      });
+    }
+    addColorBtn.addEventListener("click",()=>{
+      const inp = document.createElement("input"); inp.className = "chip-inline-input"; inp.placeholder = "输入后回车";
+      colorGroup.insertBefore(inp, addColorBtn); inp.focus();
+      const commit = async ()=>{
+        const v = (inp.value||"").trim(); inp.remove(); if(!v) return;
+        if(!colorCustomArr.includes(v)){
+          colorCustomArr.push(v);
+          if(groupKeyColor) await addCustomChip(groupKeyColor, v);
+          colorGroup.insertBefore(
+            makeCustomColorChip(v, zd, colorGroup, groupKeyColor, true, pickColor, onDataChange),
+            addColorBtn
+          );
+        }
+        onDataChange();
+      };
+      inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); commit(); } else if(e.key==="Escape"){ inp.remove(); } });
+      inp.addEventListener("blur", commit);
+    });
+
+    body2.appendChild(colorGroup);
+    // 若已有颜色，显示程度区
+    if(zd.color || zd.color_cus.length) degWrap.classList.add("visible");
+    body2.appendChild(degWrap);
+
+    // 病理特征
+    const pathoLbl = document.createElement("div"); pathoLbl.className = "sd-sub-label"; pathoLbl.textContent = "病理特征（可多选）";
+    body2.appendChild(pathoLbl);
+    const pathoSelArr    = ensureArr(zd,"patho");
+    const pathoCustomArr = ensureArr(zd,"patho_cus");
+    const groupKeyPatho  = "tongue_patho_" + zoneId;
+    const pathoCG = makeChipGroup(TONGUE_PATHO, pathoSelArr, pathoCustomArr, groupKeyPatho);
+    pathoCG.querySelectorAll(".chip:not(.add-chip)").forEach(c=>{
+      c.addEventListener("click", onDataChange);
+    });
+    body2.appendChild(pathoCG);
+  }
+
+  panel.appendChild(body2);
+  return panel;
+}
+
+// 自定义颜色 chip（单选模式，可删）
+function makeCustomColorChip(val, zd, group, groupKey, startSelected, pickColorFn, onDataChange){
+  const c = document.createElement("button");
+  c.className = "chip custom" + (startSelected ? " on" : "");
+  const textSpan = document.createElement("span"); textSpan.textContent = val;
+  const delX = document.createElement("span"); delX.className = "chip-del-x"; delX.textContent = "×";
+  c.appendChild(textSpan); c.appendChild(delX);
+  textSpan.addEventListener("click", e=>{
+    e.stopPropagation();
+    pickColorFn(val, c);
+  });
+  delX.addEventListener("click", async e=>{
+    e.stopPropagation();
+    const colorCustomArr = zd.color_cus || [];
+    const i = colorCustomArr.indexOf(val); if(i >= 0) colorCustomArr.splice(i, 1);
+    if(zd.color === val){ zd.color = ""; }
+    if(groupKey) await removeCustomChip(groupKey, val);
+    c.remove(); onDataChange();
+  });
+  return c;
+}
+
+// 构建完整的舌诊分区展开区（SVG + 所有面板）
+function buildTongueZoneDetail(S){
+  const detail = document.createElement("div");
+  detail.className = "sd-detail";
+  if(!S.tongueZoneOpen) detail.style.display = "none";
+
+  const mapInner = document.createElement("div"); mapInner.className = "sd-map-inner";
+
+  // 所有分区的面板（包括 sub），放在 SVG 下方的容器里
+  const panelsWrap = document.createElement("div");
+  panelsWrap.style.cssText = "margin-top:10px;";
+
+  // 跟踪当前打开的分区
+  let openZoneId = null;
+
+  // 构建 SVG + 舌下
+  const svgWrap = document.createElement("div"); svgWrap.className = "sd-map-wrap";
+  const svgEl = buildTongueSVG(S, onZoneClick);
+  const subEl = buildSublingualSVG(S, onZoneClick);
+  svgWrap.appendChild(svgEl);
+  svgWrap.appendChild(subEl);
+  mapInner.appendChild(svgWrap);
+  detail.appendChild(mapInner);
+  detail.appendChild(panelsWrap);
+
+  // 生成所有分区的面板
+  const allZoneIds = ["tip","mid","left","right","root","sub"];
+  const panelMap = {};
+  allZoneIds.forEach(zid=>{
+    const panel = buildZonePanel(S, zid, ()=>{
+      refreshZoneVisuals();
+    });
+    panelsWrap.appendChild(panel);
+    panelMap[zid] = panel;
+  });
+
+  function refreshZoneVisuals(){
+    // 刷新 SVG 区域的 has-data 状态
+    const allPaths = svgEl.querySelectorAll(".tcm-zone");
+    allPaths.forEach(p=>{
+      const zid = p.dataset.zone;
+      if(!zid) return;
+      const zd = S.tongueZone && S.tongueZone[zid];
+      p.classList.toggle("sd-has-data", tongueZoneHasData(zd));
+    });
+    // 舌下椭圆
+    if(subEl._ellipse){
+      const subZd = S.tongueZone && S.tongueZone["sub"];
+      subEl._ellipse.classList.toggle("sd-has-data", tongueZoneHasData(subZd));
+    }
+  }
+
+  function onZoneClick(zoneId){
+    if(openZoneId === zoneId){
+      // 关闭当前
+      panelMap[zoneId].classList.remove("open");
+      markZoneOpen(zoneId, false);
+      openZoneId = null;
+    } else {
+      // 关闭上一个
+      if(openZoneId){
+        panelMap[openZoneId].classList.remove("open");
+        markZoneOpen(openZoneId, false);
+      }
+      panelMap[zoneId].classList.add("open");
+      markZoneOpen(zoneId, true);
+      openZoneId = zoneId;
+      // 滚动面板进入视野
+      setTimeout(()=> panelMap[zoneId].scrollIntoView({behavior:"smooth",block:"nearest"}), 80);
+    }
+  }
+
+  function markZoneOpen(zoneId, isOpen){
+    if(zoneId === "sub"){
+      if(subEl._ellipse) subEl._ellipse.classList.toggle("sd-zone-open", isOpen);
+    } else {
+      const path = svgEl.querySelector('[data-zone="'+zoneId+'"]');
+      if(path) path.classList.toggle("sd-zone-open", isOpen);
+    }
+  }
+
+  return detail;
+}
+
+// 生成舌诊分区的文本段
+function composeTongueZoneText(S){
+  if(!S.tongueZoneOpen || !S.tongueZone) return [];
+  const lines = [];
+  const zoneLabels = {
+    tip:"舌尖（心肺区）", mid:"舌中（脾胃区）",
+    left:"左舌边（肝胆区）", right:"右舌边（肝胆区）",
+    root:"舌根（肾区）", sub:"舌下"
+  };
+  const allIds = ["tip","mid","left","right","root","sub"];
+  allIds.forEach(zid=>{
+    const zd = S.tongueZone[zid];
+    if(!tongueZoneHasData(zd)) return;
+    const parts = [];
+    if(zid !== "sub"){
+      // 颜色+程度
+      const colorStr = [zd.color, ...(zd.color_cus||[])].filter(Boolean).join("、");
+      if(colorStr){
+        parts.push(colorStr + (zd.degree ? "·" + zd.degree : ""));
+      }
+      // 病理特征
+      const pathoAll = [].concat(zd.patho||[], zd.patho_cus||[]).filter(Boolean);
+      if(pathoAll.length) parts.push("有" + pathoAll.join("、"));
+    } else {
+      // 舌下络脉
+      const veins = [].concat(zd.patho||[], zd.patho_cus||[]).filter(Boolean);
+      if(veins.length) parts.push("络脉" + veins.join("、"));
+    }
+    if(parts.length) lines.push(zoneLabels[zid] + "：" + parts.join("，"));
+  });
+  return lines;
+}
+
+/* ============================================================
+ * 腹诊组件
+ * ============================================================ */
+
+// 穴位定义：id / 显示名 / SVG坐标 / 是否双侧 / 所属经脉
+// SVG 坐标系：viewBox 0 0 300 380
+// 腹部轮廓：宽约300, 中线x=150, 肋缘弧线y≈55, 肚脐y≈180, 耻骨y≈340
+const ABD_ACUPOINTS = [
+  // ---- 任脉中线（x=150）----
+  { id:"jiuwei",   name:"鸠尾",   x:150, y:62,  bilateral:false, meridian:"任脉" },
+  { id:"jique",    name:"巨阙",   x:150, y:82,  bilateral:false, meridian:"任脉" },
+  { id:"shangwan",  name:"上脘",   x:150, y:102, bilateral:false, meridian:"任脉" },
+  { id:"zhongwan",  name:"中脘",   x:150, y:126, bilateral:false, meridian:"任脉" },
+  { id:"jianli",   name:"建里",   x:150, y:146, bilateral:false, meridian:"任脉" },
+  { id:"xiawan",   name:"下脘",   x:150, y:163, bilateral:false, meridian:"任脉" },
+  { id:"shuifen",  name:"水分",   x:150, y:178, bilateral:false, meridian:"任脉" },
+  { id:"shenque",  name:"神阙",   x:150, y:196, bilateral:false, meridian:"任脉" },
+  { id:"qihai",   name:"气海",   x:150, y:218, bilateral:false, meridian:"任脉" },
+  { id:"shimen",   name:"石门",   x:150, y:236, bilateral:false, meridian:"任脉" },
+  { id:"guanyuan",  name:"关元",   x:150, y:256, bilateral:false, meridian:"任脉" },
+  { id:"zhongji",  name:"中极",   x:150, y:278, bilateral:false, meridian:"任脉" },
+  { id:"qugu",    name:"曲骨",   x:150, y:300, bilateral:false, meridian:"任脉" },
+  // ---- 肾经（旁开0.5寸≈x±14）双侧 ----
+  { id:"youmen",   name:"幽门",   x:164, y:100, bilateral:true,  meridian:"肾经" },
+  { id:"huangshu",  name:"肓俞",   x:164, y:196, bilateral:true,  meridian:"肾经" },
+  { id:"dahe",    name:"大赫",   x:164, y:264, bilateral:true,  meridian:"肾经" },
+  // ---- 胃经（旁开2寸≈x±40）双侧 ----
+  { id:"burong",   name:"不容",   x:190, y:84,  bilateral:true,  meridian:"胃经" },
+  { id:"liangmen",  name:"梁门",   x:190, y:116, bilateral:true,  meridian:"胃经" },
+  { id:"tianshu",  name:"天枢",   x:190, y:196, bilateral:true,  meridian:"胃经" },
+  { id:"daju",    name:"大巨",   x:190, y:228, bilateral:true,  meridian:"胃经" },
+  { id:"shuidao",  name:"水道",   x:190, y:258, bilateral:true,  meridian:"胃经" },
+  { id:"guilai",   name:"归来",   x:190, y:282, bilateral:true,  meridian:"胃经" },
+  // ---- 脾经（旁开3.5寸≈x±66）双侧 ----
+  { id:"daheng",   name:"大横",   x:216, y:196, bilateral:true,  meridian:"脾经" },
+  { id:"fujie",   name:"腹结",   x:216, y:232, bilateral:true,  meridian:"脾经" },
+  { id:"fushe",   name:"府舍",   x:216, y:264, bilateral:true,  meridian:"脾经" },
+  // ---- 肝胆/侧腹（双侧，x≈±80以上）----
+  { id:"qimen",   name:"期门",   x:236, y:62,  bilateral:true,  meridian:"肝经" },
+  { id:"riyue",   name:"日月",   x:240, y:80,  bilateral:true,  meridian:"胆经" },
+  { id:"zhangmen",  name:"章门",   x:244, y:110, bilateral:true,  meridian:"肝经" },
+  { id:"jingmen",  name:"京门",   x:248, y:136, bilateral:true,  meridian:"胆经" },
+  { id:"daimai",   name:"带脉",   x:252, y:196, bilateral:true,  meridian:"胆经" }
+];
+
+// 双侧穴位在 state 中的 key：bilateral ? id+"_L" / id+"_R" : id
+function abdKey(acu, side){ return acu.bilateral ? acu.id+"_"+side : acu.id; }
+
+// 确保穴位状态存在
+function ensureAbd(S, key){
+  if(!S.abd) S.abd = {};
+  if(!S.abd[key]) S.abd[key] = { grade:0, quality:[], quality_cus:[] };
+  return S.abd[key];
+}
+
+// 穴位是否有数据
+function abdHasData(d){ return !!(d && (d.grade || d.quality.length || d.quality_cus.length)); }
+
+// 按诊性质选项
+const ABD_QUALITY_CHIPS = ["压痛","拒按","喜按","痞硬","结块","悸动","灼热","发凉"];
+
+// 构建腹部 SVG（viewBox 300×380）
+function buildAbdSVG(S, onAcuClick, zoom){
+  const ns = "http://www.w3.org/2000/svg";
+  const W = 300, H = 380;
+  const svg = document.createElementNS(ns,"svg");
+  svg.setAttribute("viewBox","0 0 "+W+" "+H);
+  svg.setAttribute("xmlns",ns);
+  svg.setAttribute("role","img");
+  svg.setAttribute("aria-label","腹诊穴位图");
+  const cx = W/2;
+
+  // 腹部轮廓
+  function bodyPath(){
+    // 外轮廓：肋缘弧 + 两侧腰线 + 耻骨弧
+    const p = document.createElementNS(ns,"path");
+    p.setAttribute("d",
+      "M40,55 Q80,20 150,18 Q220,20 260,55 "+   // 上边（肋缘弧）
+      "L268,180 Q270,280 260,330 "+               // 右腰线向下
+      "Q220,358 150,360 "+                        // 耻骨底弧
+      "Q80,358 40,330 "+                          // 左侧向下
+      "L32,180 Z"                                 // 左腰线向上
+    );
+    p.setAttribute("fill","var(--bg-elev)");
+    p.setAttribute("stroke","var(--line-strong)");
+    p.setAttribute("stroke-width","1.5");
+    p.style.pointerEvents = "none";
+    return p;
+  }
+
+  // 肋缘弧（两条，仅描边装饰）
+  function ribArc(dir){
+    const p = document.createElementNS(ns,"path");
+    if(dir==="L") p.setAttribute("d","M40,55 Q90,75 148,78");
+    else          p.setAttribute("d","M260,55 Q210,75 152,78");
+    p.setAttribute("fill","none");
+    p.setAttribute("stroke","var(--line-strong)");
+    p.setAttribute("stroke-width","1.2");
+    p.setAttribute("stroke-dasharray","4,3");
+    p.style.pointerEvents="none";
+    return p;
+  }
+
+  // 腹中线（虚线）
+  function midLine(){
+    const l = document.createElementNS(ns,"line");
+    l.setAttribute("x1",String(cx)); l.setAttribute("y1","55");
+    l.setAttribute("x2",String(cx)); l.setAttribute("y2","338");
+    l.setAttribute("stroke","var(--line)");
+    l.setAttribute("stroke-width","1");
+    l.setAttribute("stroke-dasharray","5,4");
+    l.style.pointerEvents="none";
+    return l;
+  }
+
+  // 肚脐小圈
+  function navel(){
+    const c = document.createElementNS(ns,"circle");
+    c.setAttribute("cx",String(cx)); c.setAttribute("cy","196");
+    c.setAttribute("r","6");
+    c.setAttribute("fill","var(--bg)");
+    c.setAttribute("stroke","var(--line-strong)");
+    c.setAttribute("stroke-width","1.5");
+    c.style.pointerEvents="none";
+    return c;
+  }
+
+  // 耻骨线
+  function pubicLine(){
+    const p = document.createElementNS(ns,"path");
+    p.setAttribute("d","M72,318 Q150,310 228,318");
+    p.setAttribute("fill","none");
+    p.setAttribute("stroke","var(--line-strong)");
+    p.setAttribute("stroke-width","1.2");
+    p.setAttribute("stroke-dasharray","4,3");
+    p.style.pointerEvents="none";
+    return p;
+  }
+
+  svg.appendChild(bodyPath());
+  svg.appendChild(ribArc("L")); svg.appendChild(ribArc("R"));
+  svg.appendChild(midLine());
+  svg.appendChild(pubicLine());
+
+  // 渲染穴位点
+  ABD_ACUPOINTS.forEach(acu=>{
+    const sides = acu.bilateral ? ["L","R"] : [null];
+    sides.forEach(side=>{
+      const key = abdKey(acu, side);
+      const d = S.abd && S.abd[key];
+      const hasDat = abdHasData(d);
+      const grade = (d && d.grade) || 0;
+
+      // x 坐标：存储值为右侧（>150），左侧取镜像
+      // 约定："R"=患者右侧=图右侧，"L"=患者左侧=图左侧（左右对调）
+      const rawX = acu.x;
+      const px = side === "L" ? (W - rawX) : rawX;
+      const py = acu.y;
+
+      // 透明热区（min 44px）
+      const hitR = 22;
+      const hit = document.createElementNS(ns,"circle");
+      hit.setAttribute("cx",String(px)); hit.setAttribute("cy",String(py));
+      hit.setAttribute("r",String(hitR));
+      hit.setAttribute("fill","transparent");
+      hit.setAttribute("cursor","pointer");
+      hit.addEventListener("click",()=> onAcuClick(key, acu, side));
+      svg.appendChild(hit);
+
+      // 疼痛色环
+      if(grade > 0){
+        const ring = document.createElementNS(ns,"circle");
+        ring.setAttribute("cx",String(px)); ring.setAttribute("cy",String(py));
+        ring.setAttribute("r","10");
+        ring.setAttribute("class","abd-pain-ring");
+        ring.setAttribute("data-grade",String(grade));
+        svg.appendChild(ring);
+      }
+
+      // 穴位圆点
+      const dot = document.createElementNS(ns,"circle");
+      dot.setAttribute("cx",String(px)); dot.setAttribute("cy",String(py));
+      dot.setAttribute("r","5");
+      dot.setAttribute("class","abd-acu" + (hasDat?" abd-has-data":""));
+      dot.setAttribute("data-key",key);
+      dot.addEventListener("click",()=> onAcuClick(key, acu, side));
+      svg.appendChild(dot);
+
+      // 等级角标（显示在点右上方）
+      if(grade > 0){
+        const badge = document.createElementNS(ns,"text");
+        badge.setAttribute("x",String(px+7)); badge.setAttribute("y",String(py-7));
+        badge.setAttribute("class","abd-badge-text");
+        badge.textContent = String(grade);
+        svg.appendChild(badge);
+      }
+
+      // 穴位标签：双侧只在左侧（L）显示，文字在点左边；中线穴文字在右边
+      if(!acu.bilateral || side==="L"){
+        const lbl = document.createElementNS(ns,"text");
+        const onLeft = (acu.bilateral && side==="L");  // L side = left of SVG
+        const finalX = onLeft ? px-9 : px+9;
+        const anchor = onLeft ? "end" : "start";
+        lbl.setAttribute("x",String(finalX)); lbl.setAttribute("y",String(py+4));
+        lbl.setAttribute("class","abd-acu-label");
+        lbl.setAttribute("text-anchor", anchor);
+        lbl.textContent = acu.name;
+        svg.appendChild(lbl);
+      }
+    });
+  });
+
+  // 神阙处不再绘制小圆点（由肚脐小圈代替），但保留热区与状态
+  // 神阙肚脐圈放在最上层
+  svg.appendChild(navel());
+
+  return svg;
+}
+
+// 构建穴位面板（复用 sd-zone-panel 交互模式）
+function buildAcuPanel(S, key, acuName, onDataChange){
+  const panel = document.createElement("div");
+  panel.className = "abd-panel";
+
+  const head = document.createElement("div"); head.className = "abd-panel-head";
+  const titleSpan = document.createElement("span"); titleSpan.textContent = acuName;
+  const closeBtn = document.createElement("button"); closeBtn.className = "abd-panel-close";
+  closeBtn.innerHTML = "&#x2715;"; closeBtn.title = "关闭";
+  head.appendChild(titleSpan); head.appendChild(closeBtn);
+  panel.appendChild(head);
+
+  const body = document.createElement("div"); body.className = "abd-panel-body";
+
+  // 等级
+  const gradeLabel = document.createElement("div"); gradeLabel.className = "abd-sub-label";
+  gradeLabel.textContent = "疼痛 / 异常等级（1轻 → 5重）";
+  body.appendChild(gradeLabel);
+
+  const gradeRow = document.createElement("div"); gradeRow.className = "abd-grade-row";
+  const d0 = ensureAbd(S, key);
+
+  for(let g=1; g<=5; g++){
+    const btn = document.createElement("button");
+    btn.className = "abd-grade-btn" + (d0.grade===g ? " is-selected" : "");
+    btn.dataset.grade = String(g);
+    const labels = ["","1·轻","2","3·中","4","5·重"];
+    btn.textContent = labels[g];
+    btn.addEventListener("click",()=>{
+      const d = ensureAbd(S, key);
+      d.grade = (d.grade === g) ? 0 : g;  // 再点取消
+      gradeRow.querySelectorAll(".abd-grade-btn").forEach(b=>{
+        b.classList.toggle("is-selected", Number(b.dataset.grade)===d.grade);
+      });
+      onDataChange();
+    });
+    gradeRow.appendChild(btn);
+  }
+  body.appendChild(gradeRow);
+
+  // 性质 chips
+  const qualLabel = document.createElement("div"); qualLabel.className = "abd-sub-label";
+  qualLabel.style.marginTop = "8px";
+  qualLabel.textContent = "按诊性质（可多选）";
+  body.appendChild(qualLabel);
+
+  const d1 = ensureAbd(S, key);
+  const chipGroup = document.createElement("div"); chipGroup.className = "chip-group";
+
+  ABD_QUALITY_CHIPS.forEach(opt=>{
+    const c = document.createElement("button"); c.className = "chip" + (d1.quality.includes(opt)?" on":"");
+    c.style.minHeight="40px"; c.style.padding="7px 14px";
+    c.textContent = opt;
+    c.addEventListener("click",()=>{
+      const d = ensureAbd(S, key);
+      const i = d.quality.indexOf(opt);
+      if(i >= 0){ d.quality.splice(i,1); c.classList.remove("on"); }
+      else { d.quality.push(opt); c.classList.add("on"); }
+      onDataChange();
+    });
+    chipGroup.appendChild(c);
+  });
+
+  // 自填按钮
+  const addBtn = document.createElement("button"); addBtn.className = "chip add-chip";
+  addBtn.style.minHeight="40px";
+  addBtn.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg> 自填';
+  chipGroup.appendChild(addBtn);
+
+  // 已有自定义
+  d1.quality_cus.forEach(val=>{
+    chipGroup.insertBefore(makeAbdCustomChip(val, key, S, chipGroup, onDataChange, addBtn, true), addBtn);
+  });
+
+  addBtn.addEventListener("click",()=>{
+    const inp = document.createElement("input"); inp.className="chip-inline-input"; inp.placeholder="输入后回车";
+    inp.style.minHeight="40px";
+    chipGroup.insertBefore(inp, addBtn); inp.focus();
+    const commit = ()=>{
+      const v = (inp.value||"").trim(); inp.remove();
+      if(!v) return;
+      const d = ensureAbd(S, key);
+      if(!d.quality_cus.includes(v)){
+        d.quality_cus.push(v);
+        chipGroup.insertBefore(makeAbdCustomChip(v, key, S, chipGroup, onDataChange, addBtn, true), addBtn);
+        onDataChange();
+      }
+    };
+    inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){e.preventDefault();commit();} else if(e.key==="Escape"){inp.remove();} });
+    inp.addEventListener("blur", commit);
+  });
+
+  body.appendChild(chipGroup);
+
+  // 清除按钮
+  const clrBtn = document.createElement("button"); clrBtn.className = "abd-clear-btn";
+  clrBtn.textContent = "清除本穴记录";
+  clrBtn.addEventListener("click",()=>{
+    const d = ensureAbd(S, key);
+    d.grade = 0; d.quality = []; d.quality_cus = [];
+    // 刷新UI
+    gradeRow.querySelectorAll(".abd-grade-btn").forEach(b=>b.classList.remove("is-selected"));
+    chipGroup.querySelectorAll(".chip.on").forEach(c=>c.classList.remove("on"));
+    onDataChange();
+  });
+  body.appendChild(clrBtn);
+
+  panel.appendChild(body);
+
+  closeBtn.addEventListener("click",()=>{
+    panel.classList.remove("open");
+  });
+
+  return panel;
+}
+
+// 自定义穴的 quality_cus chip
+function makeAbdCustomChip(val, key, S, group, onDataChange, addBtn, startSelected){
+  const c = document.createElement("button");
+  c.className = "chip custom" + (startSelected?" on":"");
+  c.style.minHeight="40px";
+  const span = document.createElement("span"); span.textContent = val;
+  const delX = document.createElement("span"); delX.className="chip-del-x"; delX.textContent="×";
+  c.appendChild(span); c.appendChild(delX);
+  span.addEventListener("click", e=>{
+    e.stopPropagation();
+    const d = ensureAbd(S, key);
+    if(d.quality_cus.includes(val)){
+      d.quality_cus.splice(d.quality_cus.indexOf(val),1); c.classList.remove("on");
+    } else {
+      d.quality_cus.push(val); c.classList.add("on");
+    }
+    onDataChange();
+  });
+  delX.addEventListener("click", e=>{
+    e.stopPropagation();
+    const d = ensureAbd(S, key);
+    const i = d.quality_cus.indexOf(val);
+    if(i>=0) d.quality_cus.splice(i,1);
+    c.remove();
+    onDataChange();
+  });
+  return c;
+}
+
+// 构建完整腹诊展开区
+function buildAbdDetail(S){
+  const detail = document.createElement("div"); detail.className = "abd-detail";
+  if(!S.abdOpen) detail.style.display = "none";
+
+  const bodyWrap = document.createElement("div"); bodyWrap.className = "abd-body";
+
+  // 缩放控制
+  const zoomBar = document.createElement("div"); zoomBar.className = "abd-zoom-bar";
+  const zoomLabel = document.createElement("span"); zoomLabel.textContent = "视图：";
+  const zoomNormal = document.createElement("button"); zoomNormal.textContent = "标准";
+  const zoomBig = document.createElement("button"); zoomBig.textContent = "放大";
+  let isZoomed = false;
+  // SVG 容器（先创建，缩放按钮回调引用它）
+  const svgWrap = document.createElement("div"); svgWrap.className = "abd-svg-wrap";
+  const svgInner = document.createElement("div"); svgInner.className = "abd-svg-inner";
+  svgInner.style.width = "300px";
+  svgWrap.style.width = "300px";
+  svgWrap.appendChild(svgInner);
+
+  zoomNormal.classList.add("active");
+  zoomNormal.addEventListener("click",()=>{
+    isZoomed = false;
+    svgInner.style.width = "300px"; svgWrap.style.width = "300px";
+    zoomNormal.classList.add("active"); zoomBig.classList.remove("active");
+  });
+  zoomBig.addEventListener("click",()=>{
+    isZoomed = true;
+    svgInner.style.width = "450px"; svgWrap.style.width = "100%";
+    zoomBig.classList.add("active"); zoomNormal.classList.remove("active");
+  });
+  zoomBar.appendChild(zoomLabel); zoomBar.appendChild(zoomNormal); zoomBar.appendChild(zoomBig);
+  bodyWrap.appendChild(zoomBar);
+  bodyWrap.appendChild(svgWrap);
+
+  // 色阶图例
+  const legend = document.createElement("div"); legend.className = "abd-legend";
+  for(let g=1;g<=5;g++){
+    const seg = document.createElement("div"); seg.className="seg"; seg.textContent=String(g);
+    legend.appendChild(seg);
+  }
+  bodyWrap.appendChild(legend);
+
+  // 面板容器（在 SVG 下方）
+  const panelWrap = document.createElement("div"); panelWrap.style.cssText="width:100%;";
+  bodyWrap.appendChild(panelWrap);
+
+  // 自定义穴区
+  const customSection = buildAbdCustomSection(S, ()=> rebuildSVG());
+  bodyWrap.appendChild(customSection);
+
+  detail.appendChild(bodyWrap);
+
+  // 当前打开的穴位 key
+  let openKey = null;
+  const panelMap = {};  // key -> panel element
+
+  function getPanelKey(key, acu, side){
+    // 构建面板标题
+    let name = acu.name;
+    if(acu.bilateral) name += (side==="L" ? "（左）" : "（右）");
+    return name;
+  }
+
+  function onAcuClick(key, acu, side){
+    if(openKey === key){
+      if(panelMap[key]) panelMap[key].classList.remove("open");
+      markOpen(key, false);
+      openKey = null;
+      return;
+    }
+    if(openKey && panelMap[openKey]){
+      panelMap[openKey].classList.remove("open");
+      markOpen(openKey, false);
+    }
+    if(!panelMap[key]){
+      const panel = buildAcuPanel(S, key, getPanelKey(key, acu, side), ()=>{
+        rebuildSVG();
+      });
+      panelWrap.appendChild(panel);
+      panelMap[key] = panel;
+    }
+    panelMap[key].classList.add("open");
+    markOpen(key, true);
+    openKey = key;
+    setTimeout(()=> panelMap[key].scrollIntoView({behavior:"smooth",block:"nearest"}), 80);
+  }
+
+  function markOpen(key, isOpen){
+    const dot = svgInner.querySelector('[data-key="'+key+'"]');
+    if(dot) dot.classList.toggle("abd-open", isOpen);
+  }
+
+  function rebuildSVG(){
+    svgInner.innerHTML = "";
+    const svg = buildAbdSVG(S, onAcuClick, isZoomed);
+    svg.style.width = "100%"; svg.style.height = "auto";
+    svgInner.appendChild(svg);
+    // 恢复 open 状态
+    if(openKey){
+      const dot = svgInner.querySelector('[data-key="'+openKey+'"]');
+      if(dot) dot.classList.add("abd-open");
+    }
+  }
+
+  rebuildSVG();
+  return detail;
+}
+
+// 自定义穴管理区
+function buildAbdCustomSection(S, onRebuild){
+  const wrap = document.createElement("div"); wrap.style.cssText="width:100%;margin-top:12px;";
+  const label = document.createElement("div");
+  label.style.cssText="font-weight:700;color:var(--primary);margin-bottom:8px;font-size:var(--fs-sm);";
+  label.textContent="自定义穴（阿是穴 · 董氏奇穴等）";
+  wrap.appendChild(label);
+
+  const listEl = document.createElement("div"); listEl.className="abd-custom-list";
+  wrap.appendChild(listEl);
+
+  let openCustomId = null;
+  const customPanelWrap = document.createElement("div"); wrap.appendChild(customPanelWrap);
+  const customPanelMap = {};
+
+  function renderCustomList(){
+    listEl.innerHTML = "";
+    if(!S.abdCustom) S.abdCustom = [];
+    S.abdCustom.forEach((item, idx)=>{
+      const row = document.createElement("div");
+      const cusD = S.abd && S.abd["__cus_"+item.id];
+      row.className = "abd-custom-item" + (abdHasData(cusD)?" abd-has-data":"") + (openCustomId===item.id?" abd-open":"");
+      const nameSpan = document.createElement("span"); nameSpan.className="abd-custom-name"; nameSpan.textContent=item.name;
+      const posSpan = document.createElement("span"); posSpan.className="abd-custom-pos"; posSpan.textContent=item.pos||"";
+      const delBtn = document.createElement("button"); delBtn.className="abd-custom-del"; delBtn.textContent="×"; delBtn.title="删除";
+      delBtn.addEventListener("click",e=>{
+        e.stopPropagation();
+        S.abdCustom.splice(idx,1);
+        if(openCustomId===item.id){ openCustomId=null; }
+        if(customPanelMap[item.id]){ customPanelMap[item.id].remove(); delete customPanelMap[item.id]; }
+        renderCustomList();
+        onRebuild();
+      });
+      row.appendChild(nameSpan); row.appendChild(posSpan); row.appendChild(delBtn);
+      row.addEventListener("click",()=>{
+        if(openCustomId===item.id){
+          if(customPanelMap[item.id]) customPanelMap[item.id].classList.remove("open");
+          openCustomId=null; renderCustomList();
+          return;
+        }
+        if(openCustomId && customPanelMap[openCustomId]) customPanelMap[openCustomId].classList.remove("open");
+        openCustomId = item.id;
+        if(!customPanelMap[item.id]){
+          const p = buildAcuPanel(S, "__cus_"+item.id, item.name, ()=> onRebuild());
+          // 自定义穴的状态存在 item 自身（grade/quality/quality_cus），通过 ensureAbd 时用 __cus_ 前缀
+          customPanelWrap.appendChild(p);
+          customPanelMap[item.id] = p;
+        }
+        customPanelMap[item.id].classList.add("open");
+        renderCustomList();
+        setTimeout(()=> customPanelMap[item.id].scrollIntoView({behavior:"smooth",block:"nearest"}), 80);
+      });
+      listEl.appendChild(row);
+    });
+  }
+  renderCustomList();
+
+  // 添加按钮
+  const addBtn = document.createElement("button"); addBtn.className="abd-add-custom";
+  addBtn.innerHTML='<svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> 添加自定义穴';
+  addBtn.addEventListener("click",()=>{
+    // 内联输入
+    const form = document.createElement("div");
+    form.style.cssText="display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--bg-elev);border:1.5px solid var(--line);border-radius:var(--radius-sm);margin-top:8px;";
+    const inp1 = document.createElement("input"); inp1.placeholder="穴名（如：阿是穴、董氏奇穴名）";
+    inp1.style.cssText="padding:9px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--line);background:var(--field-bg);color:var(--ink);";
+    const inp2 = document.createElement("input"); inp2.placeholder="位置描述（如：脐右两寸）";
+    inp2.style.cssText="padding:9px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--line);background:var(--field-bg);color:var(--ink);";
+    const saveBtn = document.createElement("button");
+    saveBtn.style.cssText="min-height:40px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-weight:600;cursor:pointer;";
+    saveBtn.textContent="添加";
+    const cancelBtn = document.createElement("button");
+    cancelBtn.style.cssText="min-height:40px;background:var(--bg-elev);border:1.5px solid var(--line);border-radius:var(--radius-sm);font-weight:600;cursor:pointer;color:var(--ink-soft);";
+    cancelBtn.textContent="取消";
+    const btnRow=document.createElement("div"); btnRow.style.cssText="display:flex;gap:8px;";
+    btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
+    form.appendChild(inp1); form.appendChild(inp2); form.appendChild(btnRow);
+    addBtn.after(form); inp1.focus();
+    const commit=()=>{
+      const name=(inp1.value||"").trim(); const pos=(inp2.value||"").trim();
+      if(!name){form.remove();return;}
+      if(!S.abdCustom) S.abdCustom=[];
+      const newId="cus_"+Date.now();
+      S.abdCustom.push({ id:newId, name, pos, grade:0, quality:[], quality_cus:[] });
+      form.remove();
+      renderCustomList();
+      onRebuild();
+    };
+    saveBtn.addEventListener("click",commit);
+    cancelBtn.addEventListener("click",()=>form.remove());
+    inp1.addEventListener("keydown",e=>{ if(e.key==="Enter"){inp2.focus();} else if(e.key==="Escape"){form.remove();} });
+    inp2.addEventListener("keydown",e=>{ if(e.key==="Enter"){commit();} else if(e.key==="Escape"){form.remove();} });
+  });
+  wrap.appendChild(addBtn);
+  return wrap;
+}
+
+// 生成腹诊文本段
+function composeAbdText(S){
+  if(!S.abdOpen) return [];
+  const lines = [];
+  const parts = [];
+
+  // 标准穴位
+  ABD_ACUPOINTS.forEach(acu=>{
+    const sides = acu.bilateral ? ["L","R"] : [null];
+    sides.forEach(side=>{
+      const key = abdKey(acu, side);
+      const d = S.abd && S.abd[key];
+      if(!abdHasData(d)) return;
+      let name = acu.name;
+      if(acu.bilateral) name += (side==="L"?"（左）":"（右）");
+      const qAll = [].concat(d.quality||[], d.quality_cus||[]).filter(Boolean);
+      const segments = [];
+      if(d.grade) segments.push(d.grade+"级");
+      if(qAll.length) segments.push(qAll.join("、"));
+      if(segments.length) parts.push(name + "：" + segments.join("·"));
+    });
+  });
+
+  // 自定义穴
+  if(S.abdCustom && S.abdCustom.length){
+    S.abdCustom.forEach(item=>{
+      const d = S.abd && S.abd["__cus_"+item.id];
+      if(!abdHasData(d)) return;
+      const name = item.name + (item.pos ? "（"+item.pos+"）" : "");
+      const qAll = [].concat(d.quality||[], d.quality_cus||[]).filter(Boolean);
+      const cusSegs = [];
+      if(d.grade) cusSegs.push(d.grade+"级");
+      if(qAll.length) cusSegs.push(qAll.join("、"));
+      if(cusSegs.length) parts.push(name + "：" + cusSegs.join("·"));
+    });
+  }
+
+  if(parts.length) lines.push("【腹诊】" + parts.join("；"));
+  return lines;
+}
+
 function buildInquiryForm(){
   const S=inquiryState;
   if(!S.visitDate) S.visitDate=todayISO();
@@ -3020,6 +5098,20 @@ function buildInquiryForm(){
     const sel=ensureArr(S.chips, f.id);
     const cus=ensureArr(S.custom, f.id);
     sec.appendChild(makeChipGroup(f.options, sel, cus, f.id));
+    // 舌质/舌苔之后追加「舌诊分区」展开开关
+    if(f.id === "shetai"){
+      const sdTog = document.createElement("div"); sdTog.className = "sd-toggle";
+      const sdSw  = document.createElement("div"); sdSw.className = "switch" + (S.tongueZoneOpen?" on":"");
+      const sdSwLabel = document.createElement("span"); sdSwLabel.textContent = "展开舌诊分区（脏腑对应 · 精细记录）";
+      sdTog.appendChild(sdSw); sdTog.appendChild(sdSwLabel); sec.appendChild(sdTog);
+      const sdDetail = buildTongueZoneDetail(S);
+      sec.appendChild(sdDetail);
+      sdSw.addEventListener("click",()=>{
+        S.tongueZoneOpen = !S.tongueZoneOpen;
+        sdSw.classList.toggle("on", S.tongueZoneOpen);
+        sdDetail.style.display = S.tongueZoneOpen ? "block" : "none";
+      });
+    }
     body.appendChild(sec);
   });
 
@@ -3029,21 +5121,20 @@ function buildInquiryForm(){
   const overallLabel=document.createElement("div"); overallLabel.style.cssText="font-weight:700;margin-bottom:4px;color:var(--ink);";
   overallLabel.textContent="整体脉象（可多选）"; secMai.appendChild(overallLabel);
   secMai.appendChild(makeChipGroup(PULSE_OPTIONS, S.pulseOverall, ensureArr(S.custom,"pulseOverall"), "pulseOverall"));
-  // 展开开关
+  // 展开开关（保留外层开关，内部改为矩阵）
   const tog=document.createElement("div"); tog.className="pulse-toggle";
   const sw=document.createElement("div"); sw.className="switch"+(S.pulseDetailOpen?" on":"");
-  const swLabel=document.createElement("span"); swLabel.textContent="展开详细脉诊（左右手寸关尺 + 趺阳/太溪）";
+  const swLabel=document.createElement("span"); swLabel.textContent="展开详细脉诊（六部三候矩阵 + 趺阳/太溪）";
   tog.appendChild(sw); tog.appendChild(swLabel); secMai.appendChild(tog);
   const detail=document.createElement("div"); detail.className="pulse-detail";
   detail.style.display=S.pulseDetailOpen?"block":"none";
-  PULSE_POSITIONS.forEach(pos=>{
-    const pp=document.createElement("div"); pp.className="pulse-pos";
-    pp.innerHTML='<div class="pp-label">'+pos.label+'</div>';
-    const sel=ensureArr(S.pulseDetail, pos.id);
-    const cus=ensureArr(S.custom, "pulse_"+pos.id);
-    pp.appendChild(makeChipGroup(PULSE_OPTIONS, sel, cus, "pulse_"+pos.id));
-    detail.appendChild(pp);
-  });
+  // 六部矩阵：左右两列
+  const pmGrid=document.createElement("div"); pmGrid.className="pm-grid";
+  pmGrid.appendChild(buildHandColumn("左手", PULSE_MATRIX_LEFT, S));
+  pmGrid.appendChild(buildHandColumn("右手", PULSE_MATRIX_RIGHT, S));
+  detail.appendChild(pmGrid);
+  // 趺阳/太溪
+  detail.appendChild(buildExtraPulse(S));
   secMai.appendChild(detail);
   sw.addEventListener("click",()=>{
     S.pulseDetailOpen=!S.pulseDetailOpen;
@@ -3051,6 +5142,22 @@ function buildInquiryForm(){
     detail.style.display=S.pulseDetailOpen?"block":"none";
   });
   body.appendChild(secMai);
+
+  /* —— 腹诊 —— */
+  const secAbd=document.createElement("div"); secAbd.className="inq-section";
+  secAbd.innerHTML='<div class="sec-label">腹诊</div><div class="inq-hint-sub">点击穴位记录按诊所见；支持添加阿是穴 · 董氏奇穴等自定义穴。</div>';
+  const abdTog=document.createElement("div"); abdTog.className="abd-toggle";
+  const abdSw=document.createElement("div"); abdSw.className="switch"+(S.abdOpen?" on":"");
+  const abdSwLabel=document.createElement("span"); abdSwLabel.textContent="展开腹诊（穴位图 · 疼痛等级 · 按诊性质）";
+  abdTog.appendChild(abdSw); abdTog.appendChild(abdSwLabel); secAbd.appendChild(abdTog);
+  const abdDetail=buildAbdDetail(S);
+  secAbd.appendChild(abdDetail);
+  abdSw.addEventListener("click",()=>{
+    S.abdOpen=!S.abdOpen;
+    abdSw.classList.toggle("on",S.abdOpen);
+    abdDetail.style.display=S.abdOpen?"block":"none";
+  });
+  body.appendChild(secAbd);
 
   /* —— 既往史 / 已做治疗 —— */
   const secJw=document.createElement("div"); secJw.className="inq-section";
@@ -3113,6 +5220,9 @@ function composeInquiryText(){
     const s=joinChips(S.chips[f.id], S.custom[f.id]);
     if(s) symLines.push(f.label+"："+s);
   });
+  // 舌诊分区（追加到四诊信息末尾）
+  const tzLines = composeTongueZoneText(S);
+  tzLines.forEach(x=> symLines.push(x));
   if(symLines.length){ lines.push("\n【四诊信息】"); symLines.forEach(x=>lines.push(x)); }
 
   // 脉象
@@ -3120,12 +5230,24 @@ function composeInquiryText(){
   const overall=joinChips(S.pulseOverall, S.custom["pulseOverall"]);
   if(overall) maiLines.push("整体脉象："+overall);
   if(S.pulseDetailOpen){
+    // 新版矩阵文本（六部三候 + 趺阳太溪）
+    const matrixLines = composePulseMatrixText(S);
+    matrixLines.forEach(x=> maiLines.push(x));
+    // 兼容旧版 pulseDetail（若有旧数据也保留输出）
     PULSE_POSITIONS.forEach(pos=>{
       const s=joinChips(S.pulseDetail[pos.id], S.custom["pulse_"+pos.id]);
-      if(s) maiLines.push(pos.label+"："+s);
+      if(s){
+        // 只在矩阵无此部位数据时才输出旧版，避免重复
+        const hasMx=maiLines.some(l=>l.startsWith(pos.label.replace("脉","")+"：")||l.includes(pos.label));
+        if(!hasMx) maiLines.push(pos.label+"："+s);
+      }
     });
   }
   if(maiLines.length){ lines.push("\n【脉诊】"); maiLines.forEach(x=>lines.push(x)); }
+
+  // 腹诊
+  const abdLines = composeAbdText(S);
+  abdLines.forEach(x=> lines.push(x));
 
   // 既往 / 治疗
   if(S.jiwang && S.jiwang.trim()) lines.push("\n既往史与用药："+S.jiwang.trim());
@@ -3171,21 +5293,21 @@ function buildSettings(){
   const activeLabel = (s.keys && s.keys[ki]) ? (s.keys[ki].label||("key "+(ki+1))) : "演示模式";
 
   body.innerHTML =
-  '<div class="field"><label>🔑 API key（可加多个，自动故障转移）</label>'+
+  '<div class="field"><label><svg class="icon" aria-hidden="true"><use href="#i-key"/></svg> API key（可加多个，自动故障转移）</label>'+
     '<div class="hint">从 Google AI Studio 免费申请。<b>按顺序使用：第一个额度用尽自动切到下一个</b>。可给每个 key 起名（如「妈妈的号」「我的号」）。key 只存在本机，不上传。全部留空则为演示模式。</div>'+
     '<div id="keyList"></div>'+
-    '<button class="btn ghost small" id="addKeyBtn" style="margin-top:6px;">➕ 添加一个 key</button>'+
+    '<button class="btn ghost small" id="addKeyBtn" style="margin-top:6px;"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> 添加一个 key</button>'+
     '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;">'+
-      '<button class="btn ghost small" id="testConnBtn">🔧 测试连接</button>'+
+      '<button class="btn ghost small" id="testConnBtn"><svg class="icon" aria-hidden="true"><use href="#i-plug"/></svg> 测试连接</button>'+
       '<span class="hint" style="margin:0;">用第一个 key + 快速模型测试连通性（最快、不易超时）。</span>'+
     '</div>'+
     '<div id="testConnResult" style="margin-top:10px;"></div></div>'+
 
-  '<div class="field"><label>💰 每个 key 的本月限额（美元）</label>'+
+  '<div class="field"><label><svg class="icon" aria-hidden="true"><use href="#i-coin"/></svg> 每个 key 的本月限额（美元）</label>'+
     '<div class="hint">单个 key 达到 80% 会提醒，达到 100% 会建议切换。每个 key 独立计算。</div>'+
     '<input type="number" id="setLimit" min="0" step="1" value="'+s.monthlyLimit+'"></div>'+
 
-  '<div class="field"><label>🌡️ 模型温度</label>'+
+  '<div class="field"><label>模型温度</label>'+
     '<div class="hint">温度越低回答越稳健严谨，越高越灵活发散。中医辨证建议偏低。勾「默认」则不指定，跟随模型自带设置。</div>'+
     '<div class="temp-row'+(s.tempEnabled?"":" disabled")+'" id="tempRow">'+
       '<input type="range" id="setTemp" min="0" max="2" step="0.1" value="'+(s.temperature)+'">'+
@@ -3193,51 +5315,51 @@ function buildSettings(){
     '</div>'+
     '<label class="temp-default"><input type="checkbox" id="setTempDefault"'+(s.tempEnabled?"":" checked")+'>跟随模型默认（不指定温度）</label></div>'+
 
-  '<div class="field"><label>📝 教学指令 / 模板（可编辑）</label>'+
+  '<div class="field"><label><svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg> 教学指令 / 模板（可编辑）</label>'+
     '<div class="hint">可改写老师的人设与各模板的专属指令。改过的会标「已自定义」，可一键恢复默认。</div>'+
     '<div id="tplOverrideList"></div></div>'+
 
-  '<div class="field"><label>🧠 模型字符串（高级，一般不用改）</label>'+
+  '<div class="field"><label>模型字符串（高级，一般不用改）</label>'+
     '<div class="hint">若 Google 将来改了模型名称，可在此更新。当前价格：深度 $'+CONFIG.models.pro.inPrice+'/$'+CONFIG.models.pro.outPrice+'，快速 $'+CONFIG.models.flash.inPrice+'/$'+CONFIG.models.flash.outPrice+'（输入/输出每百万 token）。</div>'+
     '<label style="font-weight:600;margin-top:8px;">深度模式（Pro）：</label>'+
     '<input type="text" id="setModelPro" value="'+esc(s.modelPro)+'" style="margin-bottom:10px;">'+
     '<label style="font-weight:600;">快速模式（Flash）：</label>'+
     '<input type="text" id="setModelFlash" value="'+esc(s.modelFlash)+'"></div>'+
 
-  '<div class="field"><label>🎨 界面主题</label>'+
+  '<div class="field"><label>界面主题</label>'+
     '<div class="hint">切换后立即生效，设置保存后下次打开也保持。</div>'+
     '<div class="chip-group" id="themeChoose">'+
       [['classic','经典古籍（默认）'],['clinic','医院系统'],['dark','深色']].map(([v,l])=>'<button class="chip'+(s.theme===v?' on':'')+'" data-tv="'+v+'">'+l+'</button>').join('')+
     '</div></div>'+
 
-  '<div class="field"><label>🖋 字体方案</label>'+
+  '<div class="field"><label>字体方案</label>'+
     '<div class="hint">老宋（默认）正文古意浓；明朝体标题精致；系统字体屏显最清晰。</div>'+
     '<div class="chip-group" id="fontSchemeChoose">'+
       [['system','系统字体'],['songti','老宋（默认）'],['mincho','明朝体']].map(([v,l])=>'<button class="chip'+(s.fontScheme===v?' on':'')+'" data-fv="'+v+'">'+l+'</button>').join('')+
     '</div></div>'+
 
-  '<div class="field"><label>🔠 字体大小</label>'+
+  '<div class="field"><label>字体大小</label>'+
     '<div class="font-choose" id="fontChoose">'+
       ['标准','大','特大'].map(f=>'<button class="chip'+(s.fontSize===f?' on':'')+'" data-fs="'+f+'">'+f+'</button>').join('')+
     '</div></div>'+
 
-  '<div class="field"><label>🖨 空白问诊单</label>'+
+  '<div class="field"><label><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg> 空白问诊单</label>'+
     '<div class="hint">打印一张 A4 手写问诊纸表（勾选为主、手写为辅），适合线下接诊填写。</div>'+
-    '<button class="btn ghost" id="printBlankInquiry">🖨 打印空白问诊单</button></div>'+
+    '<button class="btn ghost" id="printBlankInquiry"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg> 打印空白问诊单</button></div>'+
 
-  '<div class="field"><label>💾 数据备份</label>'+
+  '<div class="field"><label>数据备份</label>'+
     '<div class="hint">导出会把所有对话和设置存成一个文件，可在换设备时导入恢复。</div>'+
     '<div style="display:flex;gap:10px;flex-wrap:wrap;">'+
-      '<button class="btn ghost" id="exportData">⬇️ 导出备份（JSON）</button>'+
-      '<button class="btn ghost" id="importData">⬆️ 导入备份</button>'+
+      '<button class="btn ghost" id="exportData"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg> 导出备份（JSON）</button>'+
+      '<button class="btn ghost" id="importData"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg> 导入备份</button>'+
       '<input type="file" id="importFile" accept="application/json,.json" style="display:none;">'+
     '</div></div>'+
 
-  '<div class="field"><label>📊 各 key 本月用量（'+mk+'）</label>'+
+  '<div class="field"><label>各 key 本月用量（'+mk+'）</label>'+
     '<table class="usage-table"><thead><tr><th>key</th><th>本月已用</th><th>限额</th></tr></thead>'+
     '<tbody>'+keyUsageRows+'</tbody></table></div>'+
 
-  '<div class="field"><label>📊 当前激活 key 按日明细（'+esc(activeLabel)+'）</label>'+
+  '<div class="field"><label>当前激活 key 按日明细（'+esc(activeLabel)+'）</label>'+
     '<table class="usage-table"><thead><tr><th>日期</th><th>花费</th><th>输入token</th><th>输出token</th></tr></thead>'+
     '<tbody>'+dayRows+'</tbody></table></div>';
 
@@ -3288,7 +5410,7 @@ function buildSettings(){
       const res=await API.testConnection(key, model);
       const info=res.info;
       const color=res.ok?"var(--primary)":"var(--danger)";
-      let html='<div style="color:'+color+';font-weight:700;">'+(res.ok?"✅ ":"⚠️ ")+esc(info.main)+'</div>';
+      let html='<div style="color:'+color+';font-weight:700;">'+(res.ok?'<svg class="icon" aria-hidden="true"><use href="#i-check"/></svg> ':'⚠ ')+esc(info.main)+'</div>';
       if(info.detail) html+='<div style="color:var(--ink-soft);font-size:var(--fs-sm);margin-top:4px;word-break:break-all;">'+esc(info.detail)+'</div>';
       out.innerHTML=html;
     }catch(e){
@@ -3346,14 +5468,14 @@ function renderTplOverrideEditor(){
   box.innerHTML="";
   const ov=State.settings.tplOverrides||{};
   // 自由对话默认人设 + 各模板
-  const items=[{ key:"__default__", icon:"💬", name:"自由对话（默认人设）" }]
+  const items=[{ key:"__default__", icon:"i-chat", name:"自由对话（默认人设）" }]
     .concat(TEMPLATES.map(t=>({ key:t.key, icon:t.icon, name:t.name })));
   items.forEach(it=>{
     const customized = !!(ov[it.key] && ov[it.key].trim());
     const row=document.createElement("div");
     row.style.cssText="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap;";
-    row.innerHTML='<span style="flex:1;font-weight:600;">'+it.icon+' '+esc(it.name)+(customized?'<span class="tpl-custom-badge">已自定义</span>':'')+'</span>'+
-      '<button class="btn ghost small" data-edit>✏️ 编辑</button>'+
+    row.innerHTML='<span style="flex:1;font-weight:600;">'+tplIconHtml(it.icon)+' '+esc(it.name)+(customized?'<span class="tpl-custom-badge">已自定义</span>':'')+'</span>'+
+      '<button class="btn ghost small" data-edit><svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg> 编辑</button>'+
       (customized?'<button class="btn ghost small" data-reset>↩ 恢复默认</button>':'');
     row.querySelector("[data-edit]").addEventListener("click",()=> openTplEditor(it.key, it.name));
     const rb=row.querySelector("[data-reset]");
@@ -3628,6 +5750,15 @@ function wireEvents(){
   // lightbox 关闭
   $("#lightbox").addEventListener("click", (e)=>{ if(e.target.id==="lightbox"||e.target.classList.contains("lb-x")) $("#lightbox").classList.remove("show"); });
 
+  // 拍录记录单（手写识别）
+  $("#ocrBtn").addEventListener("click", ()=> $("#ocrInput").click());
+  $("#ocrInput").addEventListener("change", async (e)=>{
+    const files=e.target.files; e.target.value="";  // 允许重复选同一张
+    await startOcrPick(files);
+  });
+  $("#ocrToInput").addEventListener("click", ocrToInput);
+  $("#ocrToSheet").addEventListener("click", ocrToSheet);
+
   // 问诊单
   $("#inquiryBtn").addEventListener("click", async ()=>{ if(!State.currentSessionId) await createSession(); openInquiry(); });
   $("#genInquiry").addEventListener("click", ()=>{
@@ -3672,7 +5803,7 @@ function wireEvents(){
   // 通用关闭按钮
   $$("[data-close]").forEach(b=> b.addEventListener("click", ()=> b.closest(".overlay").classList.remove("show")));
   // 点遮罩关闭（仅这些非确认类弹层）
-  ["exportOverlay","inquiryOverlay","settingsOverlay","tplCardOverlay","tplEditOverlay"].forEach(id=>{
+  ["exportOverlay","inquiryOverlay","settingsOverlay","tplCardOverlay","tplEditOverlay","ocrOverlay"].forEach(id=>{
     $("#"+id).addEventListener("click",(e)=>{ if(e.target.id===id) e.currentTarget.classList.remove("show"); });
   });
   // 点空白处关闭「更多」模板弹层
@@ -3908,7 +6039,7 @@ async function openPatientDetail(patientId){
   if(!pat){ toast("找不到该患者"); return; }
   State.viewingPatientId = pat.id;
   renderPatientList();
-  $("#patientTitle").textContent = "📂 "+(pat.name||"患者档案");
+  $("#patientTitle").innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-folder"/></svg> '+esc(pat.name||"患者档案");
   const body=$("#patientBody");
   // 基本信息
   let html='<div class="pat-info-grid" style="display:block;margin-bottom:20px;">'+
@@ -3924,7 +6055,7 @@ async function openPatientDetail(patientId){
     (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0));
   html+='<div style="font-weight:700;color:var(--primary);font-size:var(--fs-lg);margin-bottom:10px;">就诊记录（'+visits.length+' 次）</div>';
   if(!visits.length){
-    html+='<div style="color:var(--ink-soft);padding:10px 0;">暂无就诊记录。点下方「开始复诊」可建立新会话，对话后用顶栏「📥 存入医案」归档。</div>';
+    html+='<div style="color:var(--ink-soft);padding:10px 0;">暂无就诊记录。点下方「开始复诊」可建立新会话，对话后用顶栏「存入医案」归档。</div>';
   } else {
     visits.forEach(v=>{
       const hasS = v.structured && typeof v.structured==="object";
@@ -3935,15 +6066,15 @@ async function openPatientDetail(patientId){
         ? '<span class="vc-tag" style="background:var(--primary);color:#fff;border-radius:6px;padding:1px 8px;font-size:var(--fs-sm);margin-left:8px;">诊疗单</span>'
         : '';
       const printActs = hasS
-        ? '<button class="btn ghost small" data-vact="pdoc">🖨 医生版</button>'+
-          '<button class="btn ghost small" data-vact="ppat">🖨 病人版</button>'
+        ? '<button class="btn ghost small" data-vact="pdoc"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg> 医生版</button>'+
+          '<button class="btn ghost small" data-vact="ppat"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg> 病人版</button>'
         : '';
       html+='<div class="visit-card" data-vid="'+v.id+'">'+
         '<div class="vc-head"><span class="vc-date">'+esc(v.date||"日期未记录")+'</span>'+headTag+'<span style="color:var(--ink-soft);margin-left:auto;">▾ 展开/收起</span></div>'+
         '<div class="vc-body">'+bodyHtml+
           '<div class="vc-acts">'+
             printActs+
-            '<button class="btn ghost small" data-vact="edit">✏️ 编辑</button>'+
+            '<button class="btn ghost small" data-vact="edit"><svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg> 编辑</button>'+
             '<button class="btn danger small" data-vact="del">🗑 删除</button>'+
           '</div></div>'+
       '</div>';
@@ -3974,9 +6105,9 @@ async function openPatientDetail(patientId){
   });
   // 底部操作按钮
   $("#patientFoot").innerHTML=
-    '<button class="btn ghost" id="pdEdit">✏️ 编辑资料</button>'+
-    '<button class="btn ghost" id="pdPrint">🖨 打印医案</button>'+
-    '<button class="btn" id="pdRevisit">🩺 开始复诊</button>';
+    '<button class="btn ghost" id="pdEdit"><svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg> 编辑资料</button>'+
+    '<button class="btn ghost" id="pdPrint"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg> 打印医案</button>'+
+    '<button class="btn" id="pdRevisit"><svg class="icon" aria-hidden="true"><use href="#i-stetho"/></svg> 开始复诊</button>';
   $("#pdEdit").onclick = ()=> openPatientEdit(pat.id);
   $("#pdPrint").onclick = ()=> printPatientCase(pat.id);
   $("#pdRevisit").onclick = ()=> startRevisit(pat.id);
@@ -4049,7 +6180,7 @@ async function openSaveCase(){
     '<div class="field"><label>归入患者</label>'+
       '<div class="hint">选择已有患者，或新建一位。</div>'+
       '<select id="scPatient" style="margin-bottom:10px;"></select>'+
-      '<button class="btn ghost small" id="scNewPatient">➕ 新建患者</button></div>';
+      '<button class="btn ghost small" id="scNewPatient"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> 新建患者</button></div>';
   // 填充患者下拉
   function fillPatientSelect(selPid){
     const sel=$("#scPatient"); sel.innerHTML="";
@@ -4166,6 +6297,194 @@ function printPatientCase(patientId){
 // 当前正在编辑的诊疗单（structured 对象的工作副本）与关联患者
 let sheetState = { data:null };
 
+/* ==================== 拍录记录单 · 手写识别 ====================
+ * 安全哲学：识别只是「草稿生成器」，永远不当记录员；剂量是安全红线。
+ *   拍照 → AI 转录（默认 Pro，手写识别难度高）→ 人工对照确认 → 去向（问诊信息 / 诊疗单）
+ */
+const OCR_PROMPT =
+  "你的任务：把下面这张（或这几张）手写中医看诊记录 / 勾选式问诊单的照片，逐字转录成结构化文本。"+
+  "这是给医师本人做草稿核对用的，你只是「转录员」，不是「医生」，绝对不要替她做任何医学判断。\n\n"+
+  "【铁律，逐条遵守】\n"+
+  "① 逐字转录：只转录照片上真实写着的字，禁止补全、禁止推测、禁止纠正任何医学内容（哪怕你觉得某味药、某个剂量「应该是」别的，也照抄原样）。\n"+
+  "② 认不清的字写 ⟦?⟧；若有几种可能，附候选，如 ⟦20g?30g?⟧、⟦柴胡?紫胡?⟧。宁可标不确定，也不要猜一个填进去。\n"+
+  "③ 所有剂量数字必须单独成段汇总成一份「剂量核对清单」：每一味药占一行，格式「药名 …… 克数（清晰 / 存疑）」，存疑的注明你看到的字形或候选。\n"+
+  "④ 勾选框处理：只认清晰完整的勾（√/✓/打实的勾）才算选中；整格被划叉、划掉的＝作废项，不要录入；半勾、墨点、涂改、模棱两可的，一律不当作选中，列入「待确认项」并注明在表上的大致位置。\n"+
+  "⑤ 保持原记录的分区结构：原件怎么分段（主诉 / 症状 / 舌脉 / 处方 / 医嘱等），就按原样分段转录，不要重新编排顺序。\n\n"+
+  "【输出格式，严格按这三段，标题一字不差】\n"+
+  "## 转录正文\n"+
+  "（按原件分区逐段转录，认不清处用 ⟦?⟧ 标注）\n\n"+
+  "## 剂量核对清单\n"+
+  "（每味药一行，注明「清晰」或「存疑」；若整张没有处方剂量，写「无」）\n\n"+
+  "## 待确认项\n"+
+  "（列出所有 ⟦?⟧ 处、半勾/涂改/模糊的勾选、以及任何你拿不准的地方，并注明位置；若没有，写「无」）\n";
+
+// OCR 工作状态：本批图片 + 当前查看页 + 转录文本
+let ocrState = { images:[], page:0, text:"" };
+
+// 入口：选图（拍照 / 相册），复用 compressImage 管道
+async function startOcrPick(fileList){
+  const files=Array.from(fileList||[]).filter(f=>f && f.type && f.type.startsWith("image/"));
+  if(!files.length) return;
+  const imgs=[];
+  for(const f of files){
+    if(imgs.length>=3){ toast("一次最多 3 张（按页顺序）"); break; }
+    try{ imgs.push(await compressImage(f)); }
+    catch(e){ toast("有一张图片处理失败，已跳过"); }
+  }
+  if(!imgs.length){ toast("没有可用的图片"); return; }
+  ocrState = { images:imgs, page:0, text:"" };
+  openOcrConfirm();          // 先把对照界面打开（图片已就位）
+  await transcribeOcr();     // 再发起转录
+}
+
+// 打开对照确认全屏模态并渲染骨架
+function openOcrConfirm(){
+  $("#ocrOverlay").classList.add("show");
+  renderOcrBody("");
+}
+
+// 渲染对照界面：上半原图（可缩放/翻页）+ 下半转录文本与三个高亮框
+function renderOcrBody(statusHtml){
+  const body=$("#ocrBody"); if(!body) return;
+  const imgs=ocrState.images, p=Math.min(ocrState.page, Math.max(0,imgs.length-1));
+  ocrState.page=p;
+  const cur=imgs[p];
+  const multi=imgs.length>1;
+  let h="";
+  h+='<div class="ocr-status" id="ocrStatus">'+(statusHtml||"")+'</div>';
+  // 图片查看区
+  h+='<div class="ocr-imgwrap"><img id="ocrImg" src="'+(cur?esc(cur.previewUrl):"")+'" alt="记录单原图"></div>';
+  h+='<div class="ocr-imgbar">';
+  if(multi){
+    h+='<button class="btn ghost small" id="ocrPrev">‹ 上一页</button>';
+    h+='<span class="ocr-pageinfo">第 '+(p+1)+' / '+imgs.length+' 页</span>';
+    h+='<button class="btn ghost small" id="ocrNext">下一页 ›</button>';
+  }
+  h+='<button class="btn ghost small" id="ocrZoom">点图放大</button>';
+  h+='</div>';
+  // 说明条
+  h+='<div class="ocr-note"><svg aria-hidden="true"><use href="#i-info"/></svg>'+
+     '<span>请对照原图逐项核对，特别是剂量。⟦?⟧ 为 AI 不确定项，务必人工确认后再使用。</span></div>';
+  // 转录文本
+  h+='<div class="ocr-section-title">转录文本（可直接编辑）</div>';
+  h+='<textarea id="ocrText" placeholder="转录结果将出现在这里，你也可以手动粘贴 / 修改…">'+esc(ocrState.text||"")+'</textarea>';
+  // 两个高亮框占位（解析后填充）
+  h+='<div id="ocrCallouts"></div>';
+  body.innerHTML=h;
+  wireOcrBody();
+  refreshOcrCallouts();
+}
+
+// 给图片区/文本框接线
+function wireOcrBody(){
+  const img=$("#ocrImg");
+  if(img){
+    const tog=()=> img.classList.toggle("zoomed");
+    img.addEventListener("click", tog);
+  }
+  const zb=$("#ocrZoom"); if(zb) zb.addEventListener("click",()=>{ const im=$("#ocrImg"); if(im) im.classList.toggle("zoomed"); });
+  const pv=$("#ocrPrev"); if(pv) pv.addEventListener("click",()=>{ if(ocrState.page>0){ ocrState.page--; ocrState.text=$("#ocrText").value; renderOcrBody($("#ocrStatus")?$("#ocrStatus").innerHTML:""); } });
+  const nx=$("#ocrNext"); if(nx) nx.addEventListener("click",()=>{ if(ocrState.page<ocrState.images.length-1){ ocrState.page++; ocrState.text=$("#ocrText").value; renderOcrBody($("#ocrStatus")?$("#ocrStatus").innerHTML:""); } });
+  const ta=$("#ocrText"); if(ta) ta.addEventListener("input",()=>{ ocrState.text=ta.value; refreshOcrCallouts(); });
+}
+
+// 从转录文本里解析「剂量核对清单」「待确认项」两段。解析不出就不显示（不阻塞）。
+function parseOcrSections(text){
+  text=text||"";
+  const grab=(titleRe)=>{
+    const m=text.match(titleRe);
+    if(!m) return null;
+    const start=m.index+m[0].length;
+    // 截到下一个 ## 标题或文末
+    const rest=text.slice(start);
+    const nxt=rest.search(/\n#{1,3}\s/);
+    const seg=(nxt>=0?rest.slice(0,nxt):rest).trim();
+    return seg || null;
+  };
+  const dose=grab(/#{1,3}\s*剂量核对清单[^\n]*\n/);
+  const uncertain=grab(/#{1,3}\s*待确认项[^\n]*\n/);
+  return { dose, uncertain };
+}
+
+// 根据当前文本刷新两个高亮框
+function refreshOcrCallouts(){
+  const box=$("#ocrCallouts"); if(!box) return;
+  const { dose, uncertain }=parseOcrSections(ocrState.text||"");
+  let h="";
+  if(dose && !/^无$/.test(dose)){
+    h+='<div class="ocr-callout dose"><div class="ocr-callout-h"><svg aria-hidden="true"><use href="#i-alert"/></svg>剂量核对清单（安全红线，逐味核对）</div>'+esc(dose)+'</div>';
+  }
+  if(uncertain && !/^无$/.test(uncertain)){
+    h+='<div class="ocr-callout uncertain"><div class="ocr-callout-h"><svg aria-hidden="true"><use href="#i-alert"/></svg>待确认项（AI 拿不准，请看原图）</div>'+esc(uncertain)+'</div>';
+  }
+  box.innerHTML=h;
+}
+
+// 设置状态条
+function setOcrStatus(html, isErr){
+  const st=$("#ocrStatus"); if(!st) return;
+  st.innerHTML=html||"";
+  st.classList.toggle("err", !!isErr);
+}
+
+// 发起转录：把本批图片 + OCR_PROMPT 发给当前模型（默认 Pro），走 API.send 多 key 通道
+async function transcribeOcr(){
+  // 演示模式（无 key）：不识别，但保留手动粘贴途径
+  if(!State.settings.keys || !State.settings.keys.length){
+    setOcrStatus('演示模式：未连接模型，无法自动识别。你可以在下方文本框手动粘贴 / 录入记录单内容，再选择去向。');
+    return;
+  }
+  setOcrStatus('正在用大模型识别手写记录…（手写难度高，请稍候）');
+  const parts=[];
+  ocrState.images.forEach((img,i)=>{
+    if(ocrState.images.length>1) parts.push({ text:"（第 "+(i+1)+" 页）" });
+    parts.push({ inline_data:{ mime_type: img.mimeType||"image/jpeg", data: img.dataB64 } });
+  });
+  parts.push({ text: OCR_PROMPT });
+  let acc="", usedKeyIdx=State.settings.activeKeyIndex;
+  API.send({
+    keys:State.settings.keys, startIndex:State.settings.activeKeyIndex,
+    modelId:State.settings.modelPro,   // 手写识别难度高，固定用 Pro
+    systemText:"你是一位极其严谨、字斟句酌的手写病历转录员。你只转录照片上真实存在的字，从不补全、推测或纠正医学内容；认不清就标记不确定。",
+    genConfig:buildGenConfig(),
+    hasImages:true,
+    contents:[{ role:"user", parts }],
+    onUsedKey: async (idx)=>{ usedKeyIdx=idx; await persistActiveKey(idx); },
+    onDelta:(c)=>{ acc+=c; setOcrStatus('正在识别…（已接收 '+acc.length+' 字，可滚动查看下方）'); ocrState.text=acc; const ta=$("#ocrText"); if(ta){ ta.value=acc; } },
+    onDone: async ({text,usage,demo})=>{
+      ocrState.text=(text||acc||"").trim();
+      const ta=$("#ocrText"); if(ta) ta.value=ocrState.text;
+      refreshOcrCallouts();
+      setOcrStatus('识别完成。<b>这只是草稿</b>，请对照原图逐项核对，尤其是剂量与勾选项。');
+      if(!demo && usage) await accrueUsage(usage, usedKeyIdx);
+    },
+    onError:(err)=>{
+      const info=API.explainError(err);
+      setOcrStatus('识别失败：'+esc(info.main)+'。可手动在文本框录入，或关闭后重试。', true);
+    }
+  });
+}
+
+// 去向①：用作问诊信息 —— 把确认后的文本填入聊天输入框
+function ocrToInput(){
+  const txt=($("#ocrText")?$("#ocrText").value:ocrState.text||"").trim();
+  if(!txt){ toast("还没有可用的转录文本"); return; }
+  const box=$("#inputBox");
+  box.value = (box.value ? box.value.trimEnd()+"\n\n" : "") + txt;
+  autoGrow(box);
+  $("#ocrOverlay").classList.remove("show");
+  box.focus();
+  toast("记录单内容已填入输入框，请再核对后发送");
+}
+
+// 去向②：填入诊疗单 —— 用确认后的文本作为抽取输入，复用 openSheet 的双源路径
+function ocrToSheet(){
+  const txt=($("#ocrText")?$("#ocrText").value:ocrState.text||"").trim();
+  if(!txt){ toast("还没有可用的转录文本"); return; }
+  $("#ocrOverlay").classList.remove("show");
+  openSheet({ sourceText: txt });
+}
+
 // 空白 structured 模板
 function emptySheet(){
   return {
@@ -4224,11 +6543,21 @@ function parseSheet(text){
   return out;
 }
 
-/* ---------- 打开诊疗单：抽取 → 确认表单 ---------- */
-async function openSheet(){
-  if(!State.currentSessionId || computePath().length===0){ toast("当前没有可生成诊疗单的对话"); return; }
+/* ---------- 打开诊疗单：抽取 → 确认表单 ----------
+ * 双数据源：
+ *   - 不传参（默认）：从当前对话抽取，行为不变
+ *   - 传 {sourceText}：用这段文本作为抽取输入（如拍录记录单的确认文本）
+ */
+async function openSheet(srcOpt){
+  srcOpt = srcOpt || {};
+  const useText = (typeof srcOpt.sourceText==="string" && srcOpt.sourceText.trim()) ? srcOpt.sourceText.trim() : null;
+  if(!useText){
+    if(!State.currentSessionId || computePath().length===0){ toast("当前没有可生成诊疗单的对话"); return; }
+  }
+  const srcLabel = useText ? "记录单文本" : "对话";
+  const sourceText = useText || currentConvPlainText();
   const body=$("#sheetBody");
-  body.innerHTML='<div class="hint" id="sheetStatus">正在用快速模式从对话抽取诊疗单…</div>';
+  body.innerHTML='<div class="hint" id="sheetStatus">正在用快速模式从'+esc(srcLabel)+'抽取诊疗单…</div>';
   $("#sheetOverlay").classList.add("show");
 
   // 演示模式（无 key）：直接空白表单
@@ -4245,7 +6574,7 @@ async function openSheet(){
     modelId:State.settings.modelFlash,
     systemText:"你是一位严谨的中医病历结构化助手，只做信息抽取与归纳，绝不编造剂量或诊断。",
     genConfig:buildGenConfig(),
-    contents:[{ role:"user", parts:[{ text: SHEET_PROMPT + currentConvPlainText() }] }],
+    contents:[{ role:"user", parts:[{ text: SHEET_PROMPT + sourceText }] }],
     onUsedKey: async (idx)=>{ usedKeyIdx=idx; await persistActiveKey(idx); },
     onDelta:(c)=>{ acc+=c; const st=$("#sheetStatus"); if(st) st.textContent="正在抽取…（已接收 "+acc.length+" 字）"; },
     onDone: async ({text,usage,demo})=>{
@@ -4291,9 +6620,9 @@ function buildSheetForm(s){
   // 处方（含药味表）
   h+='<div class="sheet-group"><div class="sg-title">处方</div><div class="sg-body">'+
     '<div class="sheet-field"><label>方名</label><input type="text" data-sf="prescription.formulaName" value="'+esc(rx.formulaName||"")+'"></div>'+
-    '<div class="sheet-warn">⚠️ 克数列已淡黄高亮，请逐味核对是否与原文一致。</div>'+
+    '<div class="sheet-warn">⚠ 克数列已淡黄高亮，请逐味核对是否与原文一致。</div>'+
     '<table class="herb-table"><thead><tr><th>药名</th><th>克数</th><th>备注</th><th></th></tr></thead><tbody id="herbRows"></tbody></table>'+
-    '<button class="btn ghost small herb-add-btn" id="herbAddBtn">➕ 添加一味药</button>'+
+    '<button class="btn ghost small herb-add-btn" id="herbAddBtn"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> 添加一味药</button>'+
     tf("prescription.doses","剂数", rx.doses)+
     tf("prescription.usage","服法（每日几次/饭前后/温服等）", rx.usage, 2)+
     tf("prescription.modifications","加减记录（相对上诊）", rx.modifications, 2)+
@@ -4411,7 +6740,7 @@ async function saveSheetToCase(){
     '<div class="field"><label>把这份诊疗单归入哪位患者？</label>'+
       '<div class="hint">选择已有患者，或新建一位。摘要会自动生成并随结构化数据一起入档。</div>'+
       '<select id="scPatient" style="margin-bottom:10px;"></select>'+
-      '<button class="btn ghost small" id="scNewPatient">➕ 新建患者</button></div>'+
+      '<button class="btn ghost small" id="scNewPatient"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> 新建患者</button></div>'+
     '<div class="field"><label>就诊日期</label>'+
       '<input type="date" id="scDate" value="'+esc(todayISO())+'"></div>';
   function fillPatientSelect(selPid){
